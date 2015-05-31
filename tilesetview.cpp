@@ -1,24 +1,26 @@
 #include "tilesetview.h"
 
-
+float mousX, mousY;
+int curInitState, curInitGraphic;
+QGraphicsPixmapItem* curInitGraphicItem;
 
 TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent)
 {
     setMouseTracking(true);
 
-
+    curInitState = curInitGraphic = 0;
 
 }
 
 void TilesetView::init(TileLoader* tileLoader) {
+    mTileLoader = tileLoader;
+
     setGeometry(x(), y(), TILESET_WIDTH + LINE_WIDTH*(TILESET_WIDTH/TILE_WIDTH)+3, TILESET_HEIGHT + LINE_WIDTH*(TILESET_HEIGHT/TILE_HEIGHT)+3);
     setSceneRect(0, 0, TILESET_WIDTH + LINE_WIDTH*(TILESET_WIDTH/TILE_WIDTH)+3, TILESET_HEIGHT + LINE_WIDTH*(TILESET_HEIGHT/TILE_HEIGHT)+3);
 
     mScene = new QGraphicsScene();
     mScene->setSceneRect(0, 0, TILESET_WIDTH + LINE_WIDTH*(TILESET_WIDTH/TILE_WIDTH)+1, TILESET_HEIGHT + LINE_WIDTH*(TILESET_HEIGHT/TILE_HEIGHT)+2);
     setScene(mScene);
-
-    mTileClicked = false;
 
 
     // Add vertical grid
@@ -32,35 +34,30 @@ void TilesetView::init(TileLoader* tileLoader) {
         mScene->addLine(0, i, TILESET_WIDTH + LINE_WIDTH*(TILESET_WIDTH/TILE_WIDTH)+1, i, QPen(QColor(0, 0, 0, 64)));
     }
 
-    // Add tiles
-
-    QList<QGraphicsPixmapItem*>::iterator i;
-    for(i = tileLoader->getTiles()->begin(); i != tileLoader->getTiles()->end(); ++i) {
-        QGraphicsPixmapItem* pix = *i;
-        mScene->addPixmap(pix->pixmap());
-        while(mTileClicked == false) {
-            QCoreApplication::processEvents();
-        }
-        mTileClicked = false;
-    }
-
-    // Add current tile overlay
-    mTileOverlayRect = QRectF(0, 0, TILE_WIDTH, TILE_HEIGHT);
-    mTileOverlayItem = mScene->addRect(mTileOverlayRect, QPen(QColor(64, 64, 64, 255)), QBrush(QColor(0, 0, 0, 128)));
+    // Show first tile, the rest is done in onMouseReleaseEvent
+    curInitGraphicItem = mTileLoader->getTiles()->at(curInitGraphic);
+    mScene->addItem(curInitGraphicItem);
+    curInitGraphicItem->setPos(1,1);
+    curInitGraphic++;
 }
 
 void TilesetView::mouseMoveEvent(QMouseEvent* event) {
+    mousX = event->pos().x();
+    mousY = event->pos().y();
+
+    mMouseTilePosX = (event->pos().x() - event->pos().x()/TILE_WIDTH) / TILE_WIDTH * TILE_WIDTH;
+    mMouseTilePosX += (event->pos().x() - event->pos().x()/TILE_WIDTH) / TILE_WIDTH;
+
+    mMouseTilePosY = (event->pos().y() - event->pos().y()/TILE_HEIGHT) / TILE_HEIGHT * TILE_HEIGHT;
+    mMouseTilePosY += (event->pos().y() - event->pos().y()/TILE_HEIGHT) / TILE_HEIGHT;
+
+    if(curInitState == 0 && curInitGraphicItem != 0) {
+        curInitGraphicItem->setPos(mMouseTilePosX+1, mMouseTilePosY+1);
+    }
+
     if(mTileOverlayItem != 0) {
-        int posX = (event->pos().x() - event->pos().x()/TILE_WIDTH) / TILE_WIDTH * TILE_WIDTH;
-        posX += (event->pos().x() - event->pos().x()/TILE_WIDTH) / TILE_WIDTH;
-
-        int posY = (event->pos().y() - event->pos().y()/TILE_HEIGHT) / TILE_HEIGHT * TILE_HEIGHT;
-        posY += (event->pos().y() - event->pos().y()/TILE_HEIGHT) / TILE_HEIGHT;
-
-        qDebug() << "Tile:" << posX;
-
-        mTileOverlayRect.setX(posX+1);
-        mTileOverlayRect.setY(posY+1);
+        mTileOverlayRect.setX(mMouseTilePosX+1);
+        mTileOverlayRect.setY(mMouseTilePosY+1);
         mTileOverlayRect.setWidth(TILE_WIDTH-1);
         mTileOverlayRect.setHeight(TILE_HEIGHT-1);
         mTileOverlayItem->setRect(mTileOverlayRect);
@@ -68,9 +65,23 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
-    if(mTileOverlayItem == 0) {
-        qDebug() << "Released!";
-        if(event->button() == Qt::LeftButton)
-            mTileClicked = true;
+    switch(curInitState) {
+    case 0:
+        if(curInitGraphic >= mTileLoader->getTiles()->size()) {
+            curInitState = 1;
+            // Add current tile overlay
+            mTileOverlayRect = QRectF(0, 0, TILE_WIDTH, TILE_HEIGHT);
+            mTileOverlayItem = mScene->addRect(mTileOverlayRect, QPen(QColor(64, 64, 64, 255)), QBrush(QColor(0, 0, 0, 128)));
+            break;
+        }
+        curInitGraphicItem = mTileLoader->getTiles()->at(curInitGraphic);
+        mScene->addItem(curInitGraphicItem);
+        curInitGraphicItem->setPos(mMouseTilePosX+1, mMouseTilePosY+1);
+        curInitGraphic++;
+        break;
+
+    case 1:
+
+        break;
     }
 }

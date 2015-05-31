@@ -35,8 +35,10 @@ public slots:
 private:
     QGraphicsScene* mScene;
     QRectF mTileOverlayRect;
+    TileLoader* mTileLoader;
     QGraphicsRectItem* mTileOverlayItem;
-    bool mTileClicked;
+
+    int mMouseTilePosX, mMouseTilePosY;
 
 };
 
