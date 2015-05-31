@@ -70,8 +70,10 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
         if(curInitGraphic >= mTileLoader->getTiles()->size()) {
             curInitState = 1;
             // Add current tile overlay
+            /*
             mTileOverlayRect = QRectF(0, 0, TILE_WIDTH, TILE_HEIGHT);
             mTileOverlayItem = mScene->addRect(mTileOverlayRect, QPen(QColor(64, 64, 64, 255)), QBrush(QColor(0, 0, 0, 128)));
+            */
             break;
         }
         curInitGraphicItem = mTileLoader->getTiles()->at(curInitGraphic);
