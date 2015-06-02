@@ -23,22 +23,22 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
 void TilesetView::init(TilesetManager* tilesetMgr) {
     mTilesetMgr = tilesetMgr;
 
-    setGeometry(x(), y(), TILESET_WIDTH + 3, TILESET_HEIGHT);
-    setSceneRect(0, 0, TILESET_WIDTH + 3, TILESET_HEIGHT);
+    setGeometry(x(), y(), mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
+    setSceneRect(0, 0, mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
 
     // Remove ALL items from Scene _AND_ delete them
     mScene->clear();
 
 
     // Add vertical grid
-    for(int i = 0; i <= TILESET_WIDTH; i += TILE_WIDTH) {
-        mScene->addLine(i, 0, i, TILESET_HEIGHT, QPen(QColor(0, 0, 0, 64)));
+    for(int i = 0; i <= mTilesetMgr->getTileset(0)->getWidth(); i += mTilesetMgr->getTileset(0)->getTileWidth()) {
+        mScene->addLine(i, 0, i, mTilesetMgr->getTileset(0)->getHeight(), QPen(QColor(0, 0, 0, 64)));
     }
 
 
     // Add horizontal grid
-    for(int i = 0; i <= TILESET_HEIGHT; i += TILE_HEIGHT) {
-        mScene->addLine(0, i, TILESET_WIDTH, i, QPen(QColor(0, 0, 0, 64)));
+    for(int i = 0; i <= mTilesetMgr->getTileset(0)->getHeight(); i += mTilesetMgr->getTileset(0)->getTileHeight()) {
+        mScene->addLine(0, i, mTilesetMgr->getTileset(0)->getWidth(), i, QPen(QColor(0, 0, 0, 64)));
     }
 
     // Initialize SelectedSpriteBorder (Rectangle)
@@ -82,8 +82,8 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     // Do some caluclations
     mouseX = event->pos().x();
     mouseY = event->pos().y();
-    mMouseTilePosX = mouseX / TILE_WIDTH * TILE_WIDTH;
-    mMouseTilePosY = mouseY / TILE_HEIGHT * TILE_HEIGHT;
+    mMouseTilePosX = mouseX / mTilesetMgr->getTileset(0)->getTileWidth() * mTilesetMgr->getTileset(0)->getTileWidth();
+    mMouseTilePosY = mouseY / mTilesetMgr->getTileset(0)->getTileHeight() * mTilesetMgr->getTileset(0)->getTileHeight();
 
     if(mTilesetMgr == nullptr)
         return;

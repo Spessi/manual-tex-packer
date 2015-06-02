@@ -41,15 +41,26 @@ void MainWindow::on_btn_importTileset_clicked() {
 /*
  * MENUBAR ACTIONS
  */
-
+DialogNewTileset* d1;
 void MainWindow::on_actionNew_triggered()
 {
-    if(mTilesetMgr != nullptr)
+    int width=TILESET_WIDTH, height=TILESET_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT;
+
+    if(mTilesetMgr != nullptr) {
         delete mTilesetMgr;
+        d1 = new DialogNewTileset();
+        if(d1->exec()) {
+            tile_width = d1->getTileWidth();
+            tile_height = d1->getTileHeight();
+            width = d1->getWidth() * tile_width;
+            height = d1->getHeight() * tile_height;
+        }
+    }
 
     mTilesetMgr = new TilesetManager();
-    mTilesetMgr->addTileset(new Tileset(TILESET_WIDTH, TILESET_HEIGHT, TILE_WIDTH, TILE_HEIGHT));
+    mTilesetMgr->addTileset(new Tileset(width, height, tile_width, tile_height));
     ui->tilesetView->init(mTilesetMgr);
+
 }
 
 void MainWindow::on_actionLoad_triggered()

@@ -13,18 +13,21 @@ TEMPLATE = app
 CONFIG += c++11
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
+        ui/mainwindow.cpp \
     tilesetview.cpp \
     tileset.cpp \
     sprite.cpp \
     spriteloader.cpp \
-    tilesetmanager.cpp
+    tilesetmanager.cpp \
+    ui/dialognewtileset.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += ui/mainwindow.h \
     tilesetview.h \
     tileset.h \
     sprite.h \
     spriteloader.h \
-    tilesetmanager.h
+    tilesetmanager.h \
+    ui/dialognewtileset.h
 
-FORMS    += ui/mainwindow.ui
+FORMS    += ui/mainwindow.ui \
+    ui/dialognewtileset.ui

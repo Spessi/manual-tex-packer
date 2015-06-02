@@ -5,6 +5,7 @@
 #include "tilesetview.h"
 #include "spriteloader.h"
 #include "tilesetmanager.h"
+#include "ui/dialognewtileset.h"
 
 namespace Ui {
 class MainWindow;
