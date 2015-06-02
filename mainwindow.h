@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include "tilesetview.h"
-#include "tileloader.h"
+#include "spriteloader.h"
 
 namespace Ui {
 class MainWindow;

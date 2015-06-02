@@ -10,15 +10,19 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ManualTexPack
 TEMPLATE = app
-
+CONFIG += c++11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
     tilesetview.cpp \
-    tileloader.cpp
+    tileset.cpp \
+    sprite.cpp \
+    spriteloader.cpp
 
 HEADERS  += mainwindow.h \
     tilesetview.h \
-    tileloader.h
+    tileset.h \
+    sprite.h \
+    spriteloader.h
 
 FORMS    += mainwindow.ui

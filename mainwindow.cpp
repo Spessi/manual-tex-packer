@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
+    ui->tilesetView->init();
 }
 
 MainWindow::~MainWindow()
@@ -18,9 +18,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_btn_loadTileset_clicked() {
-    TileLoader* tileLoader = new TileLoader(QString("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tiles"));
-    ui->tilesetView->init(tileLoader);
+    SpriteLoader* spriteLoader = new SpriteLoader(QString("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tiles"));
 
-
-    //ui->tilesetView->init("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tileset_unoptimized");
+    ui->tilesetView->loadSprites(spriteLoader);
 }
