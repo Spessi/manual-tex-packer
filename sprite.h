@@ -9,6 +9,7 @@ class Sprite
 {
 public:
     Sprite(QString spritePath);
+    ~Sprite();
     void setPos(float x, float y);
     float getX();
     float getY();
@@ -16,11 +17,12 @@ public:
     int getHeight();
     int getTileX();
     int getTileY();
-    QRectF getBoundingRect();
+    QString getPath();
     QGraphicsPixmapItem* getPixmapItem();
 
 private:
     QGraphicsPixmapItem* mPixmapItem;
+    QString mPath;
 };
 
 #endif // SPRITE_H

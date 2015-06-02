@@ -10,6 +10,7 @@
 #include <QDebug>
 
 #include "spriteloader.h"
+#include "tilesetmanager.h"
 #include "tileset.h"
 
 #define TILESET_WIDTH   512
@@ -23,8 +24,9 @@ class TilesetView : public QGraphicsView
     Q_OBJECT
 public:
     explicit TilesetView(QWidget *parent = 0);
-    void init();
-    void loadSprites(SpriteLoader* spriteLoader);
+    void init(TilesetManager* tilesetMgr);
+    void addSpriteToScene(Sprite* sprite, int x, int y);
+    void addSpritesToScene(QList<Sprite*> sprites);
 
 protected:
     void mouseMoveEvent(QMouseEvent* event);
@@ -37,14 +39,10 @@ public slots:
 private:
     QGraphicsScene* mScene;
     QRectF mTileOverlayRect;
+    TilesetManager* mTilesetMgr;
     SpriteLoader* mSpriteLoader;
-    Tileset* mTileset;
-
     QGraphicsRectItem* mTileOverlayItem;
-
     int mMouseTilePosX, mMouseTilePosY;
-
-
     void showSprite(Sprite* sprite, float x, float y);
 };
 

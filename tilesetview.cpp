@@ -1,23 +1,33 @@
 #include "tilesetview.h"
 
-Sprite* mSelectedSprite;
+/* TODO
+ * - Sprites werden aus XML importiert und in Tileset Liste gespeichert -> check
+ * - Geladene Sprites müssen gezeichnet werden, evtl. TilesetView noch mehr von Logik trennen.
+ * */
+
 QGraphicsRectItem* mSelectedSpriteBorder;
 
-TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent)
-{
+TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
     setMouseTracking(true);
+    mTilesetMgr = nullptr;
     mSpriteLoader = nullptr;
+    mSelectedSpriteBorder = nullptr;
+    mMouseTilePosX = mMouseTilePosY = 0;
 
-    mTileset = new Tileset(TILESET_WIDTH, TILESET_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 
     mScene = new QGraphicsScene();
     mScene->setSceneRect(0, 0, TILESET_WIDTH, TILESET_HEIGHT);
     setScene(mScene);
 }
 
-void TilesetView::init() {
+void TilesetView::init(TilesetManager* tilesetMgr) {
+    mTilesetMgr = tilesetMgr;
+
     setGeometry(x(), y(), TILESET_WIDTH + 3, TILESET_HEIGHT);
     setSceneRect(0, 0, TILESET_WIDTH + 3, TILESET_HEIGHT);
+
+    // Remove ALL items from Scene _AND_ delete them
+    mScene->clear();
 
 
     // Add vertical grid
@@ -37,40 +47,34 @@ void TilesetView::init() {
     mScene->addItem(mSelectedSpriteBorder);
 }
 
-void TilesetView::loadSprites(SpriteLoader* spriteLoader) {
-    mSpriteLoader = spriteLoader;
-
-    // Get first Sprite and locate it at 0,0
-    mSelectedSprite = mSpriteLoader->getSprite();
-    showSprite(mSelectedSprite, 0, 0);
-}
-
-/**
- * @brief Adds Sprite to scene. Will be movable until User placed it with a left-click.
- * @param sprite Sprite to be shown
- * @param x x display position
- * @param y y display position
- */
-void TilesetView::showSprite(Sprite* sprite, float x, float y) {
-    if((mSpriteLoader != nullptr) && (sprite != nullptr)) {
-        // Set Sprite to position x,y
+void TilesetView::addSpriteToScene(Sprite* sprite, int x, int y) {
+    if(sprite != nullptr) {
         sprite->setPos(x, y);
-
-        // Add Sprite Pixmap to Scene to make it visible
         mScene->addItem(sprite->getPixmapItem());
 
         // Move the rectangle to the border of the Sprite
-        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, mSelectedSprite->getWidth(), mSelectedSprite->getHeight());
+        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, sprite->getWidth(), sprite->getHeight());
+        mSelectedSpriteBorder->setVisible(true);
 
         // Check collision
-        if(mTileset->checkCollision(mSelectedSprite)) {
+        if(mTilesetMgr->getTileset(0)->checkCollision(sprite)) {
             mSelectedSpriteBorder->setPen(QPen(Qt::red));
         }
         else {
             mSelectedSpriteBorder->setPen(QPen(Qt::black));
         }
     }
+    else {
+        mSelectedSpriteBorder->setVisible(false);
+    }
 }
+
+void TilesetView::addSpritesToScene(QList<Sprite*> sprites) {
+    for(int i=0; i <sprites.size(); i++) {
+        mScene->addItem(sprites.at(i)->getPixmapItem());
+    }
+}
+
 
 void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     int mouseX, mouseY;
@@ -81,41 +85,37 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     mMouseTilePosX = mouseX / TILE_WIDTH * TILE_WIDTH;
     mMouseTilePosY = mouseY / TILE_HEIGHT * TILE_HEIGHT;
 
+    if(mTilesetMgr == nullptr)
+        return;
 
-    // If a Sprite is selected
-    if(mSelectedSprite != nullptr) {
-        // Move the current selected Sprite to the mouse position
-        mSelectedSprite->getPixmapItem()->setPos(mMouseTilePosX, mMouseTilePosY);
-        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, mSelectedSprite->getWidth(), mSelectedSprite->getHeight());
+    if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
+        mTilesetMgr->getSpriteLoader()->getCurrentSprite()->setPos(mMouseTilePosX, mMouseTilePosY);
+        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, mTilesetMgr->getSpriteLoader()->getCurrentSprite()->getWidth(), mTilesetMgr->getSpriteLoader()->getCurrentSprite()->getHeight());
 
-        if(mTileset->checkCollision(mSelectedSprite)) {
+        // Check collision
+        if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getCurrentSprite())) {
             mSelectedSpriteBorder->setPen(QPen(Qt::red));
         }
         else {
             mSelectedSpriteBorder->setPen(QPen(Qt::black));
         }
     }
+
 }
 
 void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
 
     if(event->button() == Qt::LeftButton) {
-        // Load and show every Sprite until SpriteLoader has finished
-        // User has to put the Sprite in place
-        if(mSpriteLoader->isFinished() == false) {
+        if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
             // Check collision with existing Sprites
-            if(mTileset->checkCollision(mSelectedSprite) == false) {
+            if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getCurrentSprite()) == false) {
                 // Add Sprite to Tileset for management and storing
-                mTileset->addSprite(mSelectedSprite);
+                mTilesetMgr->getTileset(0)->addSprite(mTilesetMgr->getSpriteLoader()->getCurrentSprite());
 
-                mSelectedSprite = mSpriteLoader->getSprite();
-
-                if(mSelectedSprite != nullptr) {
-                    showSprite(mSelectedSprite, mMouseTilePosX, mMouseTilePosY);
-                    mSelectedSpriteBorder->setVisible(true);
-                }
-                else {
-                    mSelectedSpriteBorder->setVisible(false);
+                if(mTilesetMgr->getSpriteLoader()->getCurrentSprite() != nullptr) {
+                    Sprite* sprite;
+                    mTilesetMgr->getSpriteLoader()->getNextSprite(&sprite);
+                    addSpriteToScene(sprite, mMouseTilePosX, mMouseTilePosY);
                 }
             }
             else {
@@ -125,3 +125,4 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
         }
     }
 }
+

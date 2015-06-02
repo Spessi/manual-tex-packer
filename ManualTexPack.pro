@@ -17,12 +17,14 @@ SOURCES += main.cpp\
     tilesetview.cpp \
     tileset.cpp \
     sprite.cpp \
-    spriteloader.cpp
+    spriteloader.cpp \
+    tilesetmanager.cpp
 
 HEADERS  += mainwindow.h \
     tilesetview.h \
     tileset.h \
     sprite.h \
-    spriteloader.h
+    spriteloader.h \
+    tilesetmanager.h
 
 FORMS    += mainwindow.ui

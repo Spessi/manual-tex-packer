@@ -3,7 +3,13 @@
 Sprite::Sprite(QString spritePath) {
     QImage* img = new QImage(spritePath);
     mPixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(*img));
-    free(img);
+    delete img;
+
+    mPath = spritePath;
+}
+
+Sprite::~Sprite() {
+    delete mPixmapItem;
 }
 
 void Sprite::setPos(float x, float y) {
@@ -40,7 +46,7 @@ QGraphicsPixmapItem* Sprite::getPixmapItem() {
     return mPixmapItem;
 }
 
-QRectF  Sprite::getBoundingRect() {
-    return QRectF(getX(), getY(), getWidth(), getHeight());
-}
 
+QString Sprite::getPath() {
+    return mPath;
+}

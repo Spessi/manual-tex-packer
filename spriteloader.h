@@ -11,13 +11,30 @@
 class SpriteLoader
 {
 public:
-    SpriteLoader(QString tilePath);
-    Sprite* getSprite();
+    enum PathType: int {
+        File = 0,
+        Directory,
+        Subdirectory
+    };
+    SpriteLoader();
+    void setLoadPath(QString path, PathType pathType);
+    int getNextSprite(Sprite** sprite);
+    int getNextSprite(Sprite** sprite, int x, int y);
+    Sprite* getCurrentSprite();
     bool isFinished();
 
+
+
 private:
+    int loadSprite(QDirIterator* it);
+    int loadSprite(QString path);
+
+    Sprite* mCurrentSprite;
     QDirIterator* mDirIterator;
+    QString mPath;
+    PathType mType;
     bool mIsFinished;
+
 };
 
 #endif // SPRITELOADER_H

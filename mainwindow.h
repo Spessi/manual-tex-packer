@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "tilesetview.h"
 #include "spriteloader.h"
+#include "tilesetmanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -18,10 +19,15 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_btn_loadTileset_clicked();
+    void on_actionLoad_triggered();
+    void on_actionSave_triggered();
+    void on_actionNew_triggered();
+
+    void on_btn_importTileset_clicked();
 
 private:
     Ui::MainWindow *ui;
+    TilesetManager* mTilesetMgr;
 };
 
 #endif // MAINWINDOW_H
