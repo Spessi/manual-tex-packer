@@ -27,4 +27,4 @@ HEADERS  += mainwindow.h \
     spriteloader.h \
     tilesetmanager.h
 
-FORMS    += mainwindow.ui
+FORMS    += ui/mainwindow.ui
