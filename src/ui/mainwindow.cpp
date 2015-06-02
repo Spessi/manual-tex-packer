@@ -10,9 +10,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     mTilesetMgr = nullptr;
-
-    // Create new Tileset with default settings
-    on_actionNew_triggered();
 }
 
 MainWindow::~MainWindow()
@@ -41,26 +38,31 @@ void MainWindow::on_btn_importTileset_clicked() {
 /*
  * MENUBAR ACTIONS
  */
-DialogNewTileset* d1;
+
 void MainWindow::on_actionNew_triggered()
 {
     int width=TILESET_WIDTH, height=TILESET_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT;
 
-    if(mTilesetMgr != nullptr) {
-        delete mTilesetMgr;
-        d1 = new DialogNewTileset();
-        if(d1->exec()) {
-            tile_width = d1->getTileWidth();
-            tile_height = d1->getTileHeight();
-            width = d1->getWidth() * tile_width;
-            height = d1->getHeight() * tile_height;
-        }
+    DialogNewTileset* dialog;
+    dialog = new DialogNewTileset();
+    if(dialog->exec()) {
+        if(mTilesetMgr != nullptr)
+            delete mTilesetMgr;
+
+        // Get dimensions for TilesetView
+        tile_width = dialog->getTileWidth();
+        tile_height = dialog->getTileHeight();
+        width = dialog->getWidth() * tile_width;
+        height = dialog->getHeight() * tile_height;
+
+        // Create TilesetMgr (aka ProjectManager)  and a new Tileset
+        mTilesetMgr = new TilesetManager();
+        mTilesetMgr->addTileset(new Tileset(width, height, tile_width, tile_height));
+
+        // Show Tileset in TilesetView
+        ui->tilesetView->init(mTilesetMgr);
     }
-
-    mTilesetMgr = new TilesetManager();
-    mTilesetMgr->addTileset(new Tileset(width, height, tile_width, tile_height));
-    ui->tilesetView->init(mTilesetMgr);
-
+    delete dialog;
 }
 
 void MainWindow::on_actionLoad_triggered()

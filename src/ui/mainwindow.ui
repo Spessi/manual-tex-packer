@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Manual Tex Packer</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="btn_importTileset">
@@ -41,12 +44,15 @@
     </property>
    </widget>
    <widget class="TilesetView" name="tilesetView">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>190</x>
       <y>10</y>
-      <width>381</width>
-      <height>271</height>
+      <width>512</width>
+      <height>512</height>
      </rect>
     </property>
     <property name="verticalScrollBarPolicy">

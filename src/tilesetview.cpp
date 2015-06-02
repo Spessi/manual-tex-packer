@@ -22,6 +22,7 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
 
 void TilesetView::init(TilesetManager* tilesetMgr) {
     mTilesetMgr = tilesetMgr;
+    this->setEnabled(true);
 
     setGeometry(x(), y(), mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
     setSceneRect(0, 0, mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
