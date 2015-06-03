@@ -6,6 +6,10 @@ SpriteLoader::SpriteLoader() {
     mCurrentSprite = nullptr;
 }
 
+SpriteLoader::~SpriteLoader() {
+    delete mDirIterator;
+}
+
 void SpriteLoader::setLoadPath(QString path, PathType pathType) {
     mPath = path;
     mType = pathType;

@@ -17,6 +17,7 @@ public:
         Subdirectory
     };
     SpriteLoader();
+    ~SpriteLoader();
     void setLoadPath(QString path, PathType pathType);
     int getNextSprite(Sprite** sprite);
     int getNextSprite(Sprite** sprite, int x, int y);
