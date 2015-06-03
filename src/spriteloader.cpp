@@ -102,6 +102,7 @@ int SpriteLoader::getNextSprite(Sprite** sprite, int x, int y) {
         res = loadSprite(mPath);
     else if(mType == SpriteLoader::Directory)
         res = loadSprite(mDirIterator);
+
     mCurrentSprite->setPos(x, y);
 
     *sprite = mCurrentSprite;

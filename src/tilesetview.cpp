@@ -11,9 +11,11 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
     setMouseTracking(true);
     mTilesetMgr = nullptr;
     mSpriteLoader = nullptr;
+    mSelectedSprite = nullptr;
     mSelectedSpriteBorder = nullptr;
-    mMouseTilePosX = mMouseTilePosY = 0;
+    mMouseTilePosX = mMouseTilePosY = mMouseX = mMouseY = 0;
 
+    this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     mScene = new QGraphicsScene();
     mScene->setSceneRect(0, 0, TILESET_WIDTH, TILESET_HEIGHT);
@@ -24,8 +26,22 @@ void TilesetView::init(TilesetManager* tilesetMgr) {
     mTilesetMgr = tilesetMgr;
     this->setEnabled(true);
 
-    setGeometry(x(), y(), mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
-    setSceneRect(0, 0, mTilesetMgr->getTileset(0)->getWidth() + 3, mTilesetMgr->getTileset(0)->getHeight());
+    int width = TILESET_WIDTH;
+    int height = TILESET_HEIGHT;
+    int sceneWidth = mTilesetMgr->getTileset(0)->getWidth();
+    int sceneHeight = mTilesetMgr->getTileset(0)->getHeight();
+
+    if(sceneWidth >= width) {
+        width += qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    }
+    if(sceneHeight >= height) {
+        height += qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    }
+
+    mScene->setSceneRect(0, 0, sceneWidth, sceneHeight);
+    setScene(mScene);
+    setGeometry(x(), y(), width, height);
+
 
     // Remove ALL items from Scene _AND_ delete them
     mScene->clear();
@@ -78,35 +94,57 @@ void TilesetView::addSpritesToScene(QList<Sprite*> sprites) {
 
 
 void TilesetView::mouseMoveEvent(QMouseEvent* event) {
-    int mouseX, mouseY;
-
     // Do some caluclations
-    mouseX = event->pos().x();
-    mouseY = event->pos().y();
-    mMouseTilePosX = mouseX / mTilesetMgr->getTileset(0)->getTileWidth() * mTilesetMgr->getTileset(0)->getTileWidth();
-    mMouseTilePosY = mouseY / mTilesetMgr->getTileset(0)->getTileHeight() * mTilesetMgr->getTileset(0)->getTileHeight();
+    mMouseX = event->pos().x() + this->horizontalScrollBar()->value();
+    mMouseY = event->pos().y() + this->verticalScrollBar()->value();
+    mMouseTilePosX = mMouseX / mTilesetMgr->getTileset(0)->getTileWidth() * mTilesetMgr->getTileset(0)->getTileWidth();
+    mMouseTilePosY = mMouseY / mTilesetMgr->getTileset(0)->getTileHeight() * mTilesetMgr->getTileset(0)->getTileHeight();
 
     if(mTilesetMgr == nullptr)
         return;
 
-    if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
-        mTilesetMgr->getSpriteLoader()->getCurrentSprite()->setPos(mMouseTilePosX, mMouseTilePosY);
-        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, mTilesetMgr->getSpriteLoader()->getCurrentSprite()->getWidth(), mTilesetMgr->getSpriteLoader()->getCurrentSprite()->getHeight());
+    Sprite* sprite;
+    if(mTilesetMgr->getSpriteLoader()->isFinished() == false)
+        sprite = mTilesetMgr->getSpriteLoader()->getCurrentSprite();
+    else if(mSelectedSprite != nullptr) {
+        sprite = mSelectedSprite;
+    }
 
-        // Check collision
-        if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getCurrentSprite())) {
+    if(mTilesetMgr->getSpriteLoader()->isFinished() == false || mSelectedSprite != nullptr) {
+        // If SpriteLoader has not-added Sprites....
+
+        // Position the Sprite
+        sprite->setPos(mMouseTilePosX, mMouseTilePosY);
+        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, sprite->getWidth(), sprite->getHeight());
+
+        // Check collision with exisiting Sprites
+        if(mTilesetMgr->getTileset(0)->checkCollision(sprite)) {
             mSelectedSpriteBorder->setPen(QPen(Qt::red));
         }
         else {
-            mSelectedSpriteBorder->setPen(QPen(Qt::black));
+            mSelectedSpriteBorder->setPen(QPen(Qt::blue));
         }
     }
+    else {
+        // 'Hovering mode' -> Nothing selected, but show Border if we hover a selectable item
+        int idx;
+        if((idx = mTilesetMgr->getTileset(0)->selectSprite(mMouseX, mMouseY)) >= 0) {
+            mSelectedSpriteBorder->setRect(mTilesetMgr->getTileset(0)->getSprites().at(idx)->getX(), mTilesetMgr->getTileset(0)->getSprites().at(idx)->getY(), mTilesetMgr->getTileset(0)->getSprites().at(idx)->getWidth(), mTilesetMgr->getTileset(0)->getSprites().at(idx)->getHeight());
+            mSelectedSpriteBorder->setVisible(true);
+        }
+        else
+            mSelectedSpriteBorder->setVisible(false);
+    }
 
+    // Redraw scene, otherwise there could be some ugly fragments (especially while moving the scrollbars)
+    this->scene()->update(this->sceneRect());
 }
 
 void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
 
     if(event->button() == Qt::LeftButton) {
+
+        // If Sprites are in SpriteLoader available,  you have to place them first
         if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
             // Check collision with existing Sprites
             if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getCurrentSprite()) == false) {
@@ -122,6 +160,24 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
             else {
                 // Make system sound to signalize the collision
                 QApplication::beep();
+            }
+        }
+        else {
+            if(mSelectedSprite == nullptr) {
+                int k = mTilesetMgr->getTileset(0)->selectSprite(mMouseX, mMouseY);
+                if(k >= 0) {
+                    mSelectedSprite = mTilesetMgr->getTileset(0)->getSprites().at(k);
+                    mSelectedSpriteBorder->setPen(QPen(Qt::blue));
+                }
+            }
+            else {
+                // Check if we can place Sprite here (not overlapping)
+                if(mTilesetMgr->getTileset(0)->checkCollision(mSelectedSprite) == false) {
+                    mSelectedSpriteBorder->setPen(QPen(Qt::black));
+                    mSelectedSprite = nullptr;
+                }
+                else
+                    QApplication::beep();
             }
         }
     }

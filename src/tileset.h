@@ -16,6 +16,7 @@ public:
     ~Tileset();
     int addSprite(Sprite* sprite);
     bool checkCollision(Sprite* sprite);
+    int selectSprite(int x, int y);
     int saveToFile(QString path);
     int loadFromFile(QString path);
 

@@ -7,6 +7,8 @@
 #include <QGraphicsItem>
 #include <QMouseEvent>
 #include <QCoreApplication>
+#include <QScrollBar>
+#include <QStyle>
 #include <QDebug>
 
 #include "spriteloader.h"
@@ -42,6 +44,8 @@ private:
     TilesetManager* mTilesetMgr;
     SpriteLoader* mSpriteLoader;
     QGraphicsRectItem* mTileOverlayItem;
+    Sprite* mSelectedSprite;
+    int mMouseX, mMouseY;
     int mMouseTilePosX, mMouseTilePosY;
     void showSprite(Sprite* sprite, float x, float y);
 };

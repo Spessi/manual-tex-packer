@@ -12,8 +12,13 @@ Sprite::~Sprite() {
     delete mPixmapItem;
 }
 
+bool Sprite::contains(int x, int y) {
+    return getBoundingRect().contains(x, y);
+}
+
 void Sprite::setPos(float x, float y) {
     mPixmapItem->setPos(x, y);
+    mPixmapItem->update();
 }
 
 float Sprite::getX() {
@@ -30,6 +35,10 @@ int Sprite::getWidth() {
 
 int Sprite::getHeight() {
     return mPixmapItem->pixmap().height();
+}
+
+QRect Sprite::getBoundingRect() {
+    return QRect(getX(), getY(), getWidth(), getHeight());
 }
 
 int Sprite::getTileX() {
