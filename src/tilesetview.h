@@ -12,11 +12,11 @@
 #include <QDebug>
 
 #include "spriteloader.h"
-#include "tilesetmanager.h"
+#include "project.h"
 #include "tileset.h"
 
-#define TILESET_WIDTH   512
-#define TILESET_HEIGHT  512
+#define VIEW_WIDTH   512
+#define VIEW_HEIGHT  512
 #define TILE_WIDTH      32
 #define TILE_HEIGHT     32
 #define LINE_WIDTH      1
@@ -26,7 +26,7 @@ class TilesetView : public QGraphicsView
     Q_OBJECT
 public:
     explicit TilesetView(QWidget *parent = 0);
-    void init(TilesetManager* tilesetMgr);
+    void init(Project* project);
     void addSpriteToScene(Sprite* sprite, int x, int y);
     void addSpriteToScene(Sprite* sprite);
     void addSpritesToScene(QList<Sprite*> sprites);
@@ -46,10 +46,11 @@ public slots:
 private:
     QGraphicsScene* mScene;
     QRectF mTileOverlayRect;
-    TilesetManager* mTilesetMgr;
+    Project* mProject;
     SpriteLoader* mSpriteLoader;
     QGraphicsRectItem* mTileOverlayItem;
     Sprite* mSelectedSprite;
+    QGraphicsRectItem* mSelectedSpriteBorder;
     int mMouseX, mMouseY;
     int mMouseTilePosX, mMouseTilePosY;
     bool mCanAddSprite;

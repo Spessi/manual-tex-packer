@@ -1,34 +1,34 @@
-#include "tilesetmanager.h"
+#include "project.h"
 
-TilesetManager::TilesetManager() {
+Project::Project() {
     mSpriteLoader = new SpriteLoader();
 }
 
-TilesetManager::~TilesetManager() {
+Project::~Project() {
     for(int i=0; i < mTilesets.size(); i++) {
         delete this->getTileset(i);
     }
     delete mSpriteLoader;
 }
 
-void TilesetManager::addTileset(Tileset* tileset) {
+void Project::addTileset(Tileset* tileset) {
     if(tileset != nullptr)
         mTilesets.append(tileset);
 }
 
-Tileset* TilesetManager::getTileset(int idx) {
+Tileset* Project::getTileset(int idx) {
     if(idx >= mTilesets.size())
         return nullptr;
 
     return mTilesets.at(idx);
 }
 
-SpriteLoader* TilesetManager::getSpriteLoader() {
+SpriteLoader* Project::getSpriteLoader() {
     return mSpriteLoader;
 }
 
 
-int TilesetManager::saveToFile(QString path) {
+int Project::saveToFile(QString path) {
     QFile file(path);
     file.open(QFile::WriteOnly | QFile::Text);
 
@@ -67,13 +67,7 @@ int TilesetManager::saveToFile(QString path) {
     return 0;
 }
 
-int TilesetManager::loadFromFile(QString path) {
-    /*
-    int sprites_counter = 0, sprites_count = 0;
-    Sprite* sprite = nullptr;
-    int sprite_x, sprite_y, sprite_width, sprite_height;
-    QString sprite_path;*/
-
+int Project::loadFromFile(QString path) {
     QFile file(path);
     file.open(QFile::ReadOnly | QFile::Text);
 

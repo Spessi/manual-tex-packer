@@ -39,5 +39,5 @@ void DialogNewTileset::recalcDimension() {
     int width = ui->inp_width->value() * ui->inp_tilewidth->value();
     int height = ui->inp_height->value() * ui->inp_tileheight->value();
 
-    ui->lbl_val_tilesetdim->setText(QString::number(width) + "x" + QString::number(height) + " Pixels");
+    ui->lbl_val_tilesetdim->setText(QString::number(width) + "x" + QString::number(height) + " px");
 }

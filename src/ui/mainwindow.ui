@@ -42,13 +42,13 @@
       <x>10</x>
       <y>10</y>
       <width>141</width>
-      <height>161</height>
+      <height>191</height>
      </rect>
     </property>
     <property name="title">
      <string>Add sprites</string>
     </property>
-    <widget class="QPushButton" name="btn_importTileset">
+    <widget class="QPushButton" name="btn_importSpritesFile">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -61,7 +61,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Import...</string>
+      <string>Import file...</string>
      </property>
     </widget>
     <widget class="QLabel" name="lbl_sprites_queue">
@@ -139,6 +139,22 @@
      </property>
      <property name="text">
       <string>■</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_importSpritesDir">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Import directory...</string>
      </property>
     </widget>
    </widget>

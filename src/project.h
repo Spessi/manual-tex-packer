@@ -1,5 +1,5 @@
-#ifndef TILESETMANAGER_H
-#define TILESETMANAGER_H
+#ifndef PROJECT_H
+#define PROJECT_H
 
 #include <QList>
 #include <QXmlStreamWriter>
@@ -7,11 +7,11 @@
 #include "tileset.h"
 #include "spriteloader.h"
 
-class TilesetManager
+class Project
 {
 public:
-    TilesetManager();
-    ~TilesetManager();
+    Project();
+    ~Project();
     void addTileset(Tileset* tileset);
     Tileset* getTileset(int idx);
     SpriteLoader* getSpriteLoader();
@@ -23,4 +23,4 @@ private:
     SpriteLoader* mSpriteLoader;
 };
 
-#endif // TILESETMANAGER_H
+#endif // PROJECT_H

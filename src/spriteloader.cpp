@@ -25,6 +25,9 @@ void SpriteLoader::setLoadPath(QString path, PathType pathType) {
 
     if(pathType == SpriteLoader::File) {
         mDirIterator = nullptr;
+        QFileInfo info(mPath);
+        if(info.isFile() &&  info.suffix() == "png")
+            mTempSprites.append(new Sprite(mPath));
     }
     else if(pathType == SpriteLoader::Directory) {
         mDirIterator = new QDirIterator(mPath, QDirIterator::NoIteratorFlags);
@@ -33,7 +36,10 @@ void SpriteLoader::setLoadPath(QString path, PathType pathType) {
         mDirIterator = new QDirIterator(mPath, QDirIterator::Subdirectories);
         // Load all sprites in memory
         while(1) {
-            if(mDirIterator->fileInfo().isFile() == false) {
+            if(mDirIterator->fileInfo().isFile() == false || mDirIterator->fileInfo().suffix() != "png") {
+                if(mDirIterator->hasNext() == false)
+                    break;
+
                 mDirIterator->next();
                 continue;
             }
@@ -45,7 +51,13 @@ void SpriteLoader::setLoadPath(QString path, PathType pathType) {
                 break;
             mDirIterator->next();
         }
+
+
     }
+
+    // If no file was loaded
+    if(mTempSprites.size() == 0)
+        finished();
 }
 
 int SpriteLoader::getSpritesCount() {
@@ -57,7 +69,7 @@ int SpriteLoader::getSpritesCount() {
 /**
  * @brief SpriteLoader::next
  * @return  0 = OK
- *          1 = Grenze nach rechts
+ *          1 = No more Sprite available on the "right" side
  */
 int SpriteLoader::next() {
     int tmpIndex = mSpriteIndex + 1;

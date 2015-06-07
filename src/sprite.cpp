@@ -43,16 +43,6 @@ QRect Sprite::getBoundingRect() {
     return QRect(getX(), getY(), getWidth(), getHeight());
 }
 
-int Sprite::getTileX() {
-    // TODO remove hardcoded tile width
-    return getX() / 32;
-}
-
-int Sprite::getTileY() {
-    // TODO remove hardcoded tile height
-    return getY() / 32;
-}
-
 QGraphicsPixmapItem* Sprite::getPixmapItem() {
     return mPixmapItem;
 }

@@ -18,16 +18,16 @@ SOURCES += main.cpp\
     tileset.cpp \
     sprite.cpp \
     spriteloader.cpp \
-    tilesetmanager.cpp \
-    ui/dialognewtileset.cpp
+    ui/dialognewtileset.cpp \
+    project.cpp
 
 HEADERS  += ui/mainwindow.h \
     tilesetview.h \
     tileset.h \
     sprite.h \
     spriteloader.h \
-    tilesetmanager.h \
-    ui/dialognewtileset.h
+    ui/dialognewtileset.h \
+    project.h
 
 FORMS    += ui/mainwindow.ui \
     ui/dialognewtileset.ui

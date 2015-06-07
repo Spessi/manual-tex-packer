@@ -17,9 +17,6 @@ public:
     float getY();
     int getWidth();
     int getHeight();
-    QRect getBoundingRect();
-    int getTileX();
-    int getTileY();
     QString getPath();
     QGraphicsPixmapItem* getPixmapItem();
     void setIsOnScene(bool state);
@@ -29,6 +26,7 @@ private:
     QGraphicsPixmapItem* mPixmapItem;
     QString mPath;
     bool mIsOnScene;
+    QRect getBoundingRect();
 };
 
 #endif // SPRITE_H

@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    mTilesetMgr = nullptr;
+    mProject = nullptr;
 
 
 //    connect(ui->inp_width, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogNewTileset::recalcDimension);
@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete mTilesetMgr;
+    delete mProject;
     delete ui;
 }
 
@@ -28,16 +28,17 @@ MainWindow::~MainWindow()
  */
 
 void MainWindow::refreshSpriteLoaderUI() {
-    if(mTilesetMgr->getSpriteLoader()->isFinished()) {
+    if(mProject->getSpriteLoader()->isFinished()) {
         ui->btn_sprites_playpause->setEnabled(false);
         ui->btn_sprites_stop->setEnabled(false);
         ui->btn_sprites_for->setEnabled(false);
         ui->btn_sprites_rew->setEnabled(false);
-        ui->btn_importTileset->setEnabled(true);
+        ui->btn_importSpritesFile->setEnabled(true);
+        ui->btn_importSpritesDir->setEnabled(true);
         ui->lbl_sprites_queue->setText("Queue: -/-");
     }
     else {
-        ui->lbl_sprites_queue->setText("Queue: " + QString::number(mTilesetMgr->getSpriteLoader()->getSpriteIndex()+1) + "/" + QString::number(mTilesetMgr->getSpriteLoader()->getSpritesCount()));
+        ui->lbl_sprites_queue->setText("Queue: " + QString::number(mProject->getSpriteLoader()->getSpriteIndex()+1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
     }
 
 }
@@ -47,27 +48,66 @@ void MainWindow::refreshSpriteLoaderUI() {
  * BUTTON SLOTS
  */
 
-void MainWindow::on_btn_importTileset_clicked() {
-    if(mTilesetMgr == nullptr)
+
+void MainWindow::on_btn_importSpritesFile_clicked()
+{
+    if(mProject == nullptr)
         return;
 
-    mTilesetMgr->getSpriteLoader()->setLoadPath("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tiles", SpriteLoader::Subdirectory);
-    if(mTilesetMgr->getSpriteLoader()->getSpritesCount() > 0) {
-        ui->btn_sprites_playpause->setEnabled(true);
-        ui->btn_sprites_stop->setEnabled(true);
-        ui->btn_sprites_for->setEnabled(true);
-        ui->btn_sprites_rew->setEnabled(true);
-        ui->btn_importTileset->setEnabled(false);
 
-        ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mTilesetMgr->getSpriteLoader()->getSpritesCount()));
-    }
+    // Import single file
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Import image"), "", tr("Image Files (*.png)"));
+    if(filePath.isNull())
+        return;
+    mProject->getSpriteLoader()->setLoadPath(filePath, SpriteLoader::File);
 
-    // Get first sprite
-    Sprite* sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+    // Get sprite
+    Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
     ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
 
     // Allow adding Sprites
     ui->tilesetView->run();
+
+    // Disable import buttons
+    ui->btn_importSpritesFile->setEnabled(false);
+    ui->btn_importSpritesDir->setEnabled(false);
+
+}
+
+
+void MainWindow::on_btn_importSpritesDir_clicked()
+{
+    QStringList folderPath;
+
+    if(mProject == nullptr)
+        return;
+
+    QFileDialog dialog(this);
+    dialog.setWindowTitle(tr("Import images"));
+    dialog.setNameFilter(tr("Image files (*.png)"));
+    dialog.setFileMode(QFileDialog::Directory);
+    if(dialog.exec()) {
+        folderPath = dialog.selectedFiles();
+    }
+
+    mProject->getSpriteLoader()->setLoadPath(folderPath.at(0), SpriteLoader::Subdirectory);
+    if(mProject->getSpriteLoader()->getSpritesCount() > 0) {
+        ui->btn_sprites_playpause->setEnabled(true);
+        ui->btn_sprites_stop->setEnabled(true);
+        ui->btn_sprites_for->setEnabled(true);
+        ui->btn_sprites_rew->setEnabled(true);
+        ui->btn_importSpritesFile->setEnabled(false);
+        ui->btn_importSpritesDir->setEnabled(false);
+
+        ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
+
+        // Get first sprite
+        Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
+        ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
+
+        // Allow adding Sprites
+        ui->tilesetView->run();
+    }
 }
 
 
@@ -79,7 +119,7 @@ void MainWindow::on_btn_sprites_playpause_clicked()
         ui->tilesetView->run();
         ui->btn_sprites_for->setEnabled(true);
         ui->btn_sprites_rew->setEnabled(true);
-        ui->tilesetView->addSpriteToScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
+        ui->tilesetView->addSpriteToScene(mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex()));
     }
     else {
         ui->btn_sprites_playpause->setText("►");
@@ -87,7 +127,7 @@ void MainWindow::on_btn_sprites_playpause_clicked()
         ui->tilesetView->pause();
         ui->btn_sprites_for->setEnabled(false);
         ui->btn_sprites_rew->setEnabled(false);
-        ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
+        ui->tilesetView->removeSpriteFromScene(mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex()));
     }
 }
 
@@ -96,12 +136,12 @@ void MainWindow::on_btn_sprites_for_clicked()
 {
     Sprite* sprite;
 
-    int oldIndex = mTilesetMgr->getSpriteLoader()->getSpriteIndex();
-    if(mTilesetMgr->getSpriteLoader()->next() == 0) {
+    int oldIndex = mProject->getSpriteLoader()->getSpriteIndex();
+    if(mProject->getSpriteLoader()->next() == 0) {
         // If next Sprite is available
-        sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+        sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
 
-        ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(oldIndex));
+        ui->tilesetView->removeSpriteFromScene(mProject->getSpriteLoader()->getSprite(oldIndex));
         ui->tilesetView->addSpriteToScene(sprite);
 
         // Refresh UI
@@ -111,7 +151,7 @@ void MainWindow::on_btn_sprites_for_clicked()
         QApplication::beep();
     }
 
-    qDebug() << mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+    qDebug() << mProject->getSpriteLoader()->getSpriteIndex();
 }
 
 
@@ -119,12 +159,12 @@ void MainWindow::on_btn_sprites_rew_clicked()
 {
         Sprite* sprite;
 
-        int oldIndex = mTilesetMgr->getSpriteLoader()->getSpriteIndex();
-        if(mTilesetMgr->getSpriteLoader()->prev() == 0) {
+        int oldIndex = mProject->getSpriteLoader()->getSpriteIndex();
+        if(mProject->getSpriteLoader()->prev() == 0) {
             // If next Sprite is available
-            sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+            sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
 
-            ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(oldIndex));
+            ui->tilesetView->removeSpriteFromScene(mProject->getSpriteLoader()->getSprite(oldIndex));
             ui->tilesetView->addSpriteToScene(sprite);
 
             // Refresh UI
@@ -133,13 +173,13 @@ void MainWindow::on_btn_sprites_rew_clicked()
         else {
             QApplication::beep();
         }
-        qDebug() << mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+        qDebug() << mProject->getSpriteLoader()->getSpriteIndex();
 }
 
 void MainWindow::on_btn_sprites_stop_clicked()
 {
-    ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
-    mTilesetMgr->getSpriteLoader()->finished();
+    ui->tilesetView->removeSpriteFromScene(mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex()));
+    mProject->getSpriteLoader()->finished();
 
     refreshSpriteLoaderUI();
 
@@ -152,13 +192,13 @@ void MainWindow::on_btn_sprites_stop_clicked()
 
 void MainWindow::on_actionNew_triggered()
 {
-    int width=TILESET_WIDTH, height=TILESET_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT;
+    int width=VIEW_WIDTH, height=VIEW_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT;
 
     DialogNewTileset* dialog;
     dialog = new DialogNewTileset();
     if(dialog->exec()) {
-        if(mTilesetMgr != nullptr)
-            delete mTilesetMgr;
+        if(mProject != nullptr)
+            delete mProject;
 
         // Get dimensions for TilesetView
         tile_width = dialog->getTileWidth();
@@ -167,41 +207,50 @@ void MainWindow::on_actionNew_triggered()
         height = dialog->getHeight() * tile_height;
 
         // Create TilesetMgr (aka ProjectManager)  and a new Tileset
-        mTilesetMgr = new TilesetManager();
-        mTilesetMgr->addTileset(new Tileset(width, height, tile_width, tile_height));
+        mProject = new Project();
+        mProject->addTileset(new Tileset(width, height, tile_width, tile_height));
 
         // Show Tileset in TilesetView
-        ui->tilesetView->init(mTilesetMgr);
+        ui->tilesetView->init(mProject);
 
-        ui->btn_importTileset->setEnabled(true);
+        ui->btn_importSpritesFile->setEnabled(true);
+        ui->btn_importSpritesDir->setEnabled(true);
     }
     delete dialog;
 }
 
 void MainWindow::on_actionLoad_triggered()
 {
-    if(mTilesetMgr != nullptr)
-        delete mTilesetMgr;
-
-    mTilesetMgr = new TilesetManager();
-
-
     // Load project configuration
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TexProject Files (*.texproj)"));
-    mTilesetMgr->loadFromFile(filePath);
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Project"), "", tr("TexProject Files (*.texproj)"));
+    if(filePath.isNull())
+        return;
+
+    if(mProject != nullptr)
+        delete mProject;
+
+    mProject = new Project();
+
+    mProject->loadFromFile(filePath);
 
     // Draw grid and initialize other things
-    ui->tilesetView->init(mTilesetMgr);
+    ui->tilesetView->init(mProject);
 
     // Draw Sprites
-    ui->tilesetView->addSpritesToScene(mTilesetMgr->getTileset(0)->getSprites());
+    ui->tilesetView->addSpritesToScene(mProject->getTileset(0)->getSprites());
     ui->tilesetView->pause();
 
-    ui->btn_importTileset->setEnabled(true);
+    ui->btn_importSpritesFile->setEnabled(true);
+    ui->btn_importSpritesDir->setEnabled(true);
 }
 
 void MainWindow::on_actionSave_triggered()
 {
     QString filePath = QFileDialog::getSaveFileName(this, tr("Save Project"), "", tr("TexProject Files (*.texproj)"));
-    mTilesetMgr->saveToFile(filePath);
+    if(filePath.isNull())
+        return;
+    mProject->saveToFile(filePath);
 }
+
+
+
