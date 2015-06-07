@@ -15,6 +15,8 @@ public:
     Tileset(int width, int height, int tileWidth, int tileHeight);
     ~Tileset();
     int addSprite(Sprite* sprite);
+    int removeSprite(Sprite* sprite);
+    int removeAllSprites();
     bool checkCollision(Sprite* sprite);
     int selectSprite(int x, int y);
     int saveToFile(QString path);

@@ -126,6 +126,48 @@
      </property>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>141</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Selected Sprite</string>
+    </property>
+    <widget class="QLabel" name="lbl_selected_sprite">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Name: -</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_selected_remove">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>121</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Remove</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="mainToolBar">
@@ -168,6 +210,8 @@
      </property>
      <addaction name="actionImport_from_file"/>
      <addaction name="actionImport_from_directory"/>
+     <addaction name="separator"/>
+     <addaction name="actionRemove_all"/>
     </widget>
     <addaction name="menuSprites"/>
    </widget>
@@ -213,6 +257,14 @@
    </property>
    <property name="text">
     <string>Import from file...</string>
+   </property>
+  </action>
+  <action name="actionRemove_all">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Remove all</string>
    </property>
   </action>
  </widget>

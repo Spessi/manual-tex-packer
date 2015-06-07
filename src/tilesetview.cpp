@@ -19,6 +19,10 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
 void TilesetView::init(Project* project) {
     mProject = project;
     this->setEnabled(true);
+    mSelectedSprite = nullptr;
+    mSelectedSpriteBorder = nullptr;
+    mMouseTilePosX = mMouseTilePosY = mMouseX = mMouseY = 0;
+    mCanAddSprite = false;
 
     int width = VIEW_WIDTH;
     int height = VIEW_HEIGHT;
@@ -53,6 +57,9 @@ void TilesetView::init(Project* project) {
     }
 
     // Initialize SelectedSpriteBorder (Rectangle)
+    if(mSelectedSpriteBorder != nullptr)
+        delete mSelectedSpriteBorder;
+
     mSelectedSpriteBorder = new QGraphicsRectItem();
     mSelectedSpriteBorder->setZValue(99);
     mScene->addItem(mSelectedSpriteBorder);
@@ -93,6 +100,22 @@ void TilesetView::addSpritesToScene(QList<Sprite*> sprites) {
 
 void TilesetView::removeSpriteFromScene(Sprite* sprite) {
     mScene->removeItem(sprite->getPixmapItem());
+
+    if(sprite == mSelectedSprite) {
+        mSelectedSprite = nullptr;
+        mSelectedSpriteBorder->setVisible(false);
+    }
+}
+
+void TilesetView::removeAllSpritesFromScene() {
+    // Delete all Sprites in SpriteLoader queue
+    mProject->getSpriteLoader()->finished();
+
+    // Reinitialize the TilesetView
+    init(mProject);
+
+    // Refresh Queue UI
+    emit mouseReleased();
 }
 
 void TilesetView::run() {
@@ -195,8 +218,10 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
         else {
             // Selection mode!
             if(mSelectedSprite == nullptr) {
+                // Check if cursor is above a Sprite
                 int k = mProject->getTileset(0)->selectSprite(mMouseX, mMouseY);
                 if(k >= 0) {
+                    // If yes, select it
                     mSelectedSprite = mProject->getTileset(0)->getSprites().at(k);
                     mSelectedSpriteBorder->setPen(QPen(Qt::blue));
                 }
@@ -210,6 +235,7 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
                 else
                     QApplication::beep();
             }
+            emit spriteSelected(&mSelectedSprite);
         }
 
         emit mouseReleased();

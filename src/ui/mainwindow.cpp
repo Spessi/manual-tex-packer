@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     connect(ui->tilesetView, &TilesetView::mouseReleased, this, &MainWindow::refreshSpriteLoaderUI);
+    connect(ui->tilesetView, &TilesetView::spriteSelected, this, &MainWindow::onSpriteSelected);
 }
 
 MainWindow::~MainWindow()
@@ -34,12 +35,24 @@ void MainWindow::refreshSpriteLoaderUI() {
         ui->btn_sprites_rew->setEnabled(false);
         ui->actionImport_from_file->setEnabled(true);
         ui->actionImport_from_directory->setEnabled(true);
-        ui->lbl_sprites_queue->setText("Queue: -/-");
+        ui->lbl_sprites_queue->setText("Sprite: -/-");
     }
     else {
-        ui->lbl_sprites_queue->setText("Queue: " + QString::number(mProject->getSpriteLoader()->getSpriteIndex()+1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
+        ui->lbl_sprites_queue->setText("Sprite: " + QString::number(mProject->getSpriteLoader()->getSpriteIndex()+1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
     }
 
+}
+
+void MainWindow::onSpriteSelected(Sprite** sprite) {
+    if(sprite != nullptr && (*sprite) != nullptr) {
+        mSelectedSprite = *sprite;
+        ui->lbl_selected_sprite->setText("Name: " + mSelectedSprite->getName());
+        ui->btn_selected_remove->setEnabled(true);
+    }
+    else {
+        ui->lbl_selected_sprite->setText("Name: -");
+        ui->btn_selected_remove->setEnabled(false);
+    }
 }
 
 
@@ -123,6 +136,15 @@ void MainWindow::on_btn_sprites_stop_clicked()
 }
 
 
+void MainWindow::on_btn_selected_remove_clicked()
+{
+    mProject->getTileset(0)->removeSprite(mSelectedSprite);
+    ui->tilesetView->removeSpriteFromScene(mSelectedSprite);
+
+    onSpriteSelected(nullptr);
+}
+
+
 /*
  * MENUBAR ACTIONS
  */
@@ -152,6 +174,7 @@ void MainWindow::on_actionNew_triggered()
 
         ui->actionImport_from_file->setEnabled(true);
         ui->actionImport_from_directory->setEnabled(true);
+        ui->actionRemove_all->setEnabled(true);
     }
     delete dialog;
 }
@@ -179,6 +202,7 @@ void MainWindow::on_actionLoad_triggered()
 
     ui->actionImport_from_file->setEnabled(true);
     ui->actionImport_from_directory->setEnabled(true);
+    ui->actionRemove_all->setEnabled(true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -246,4 +270,10 @@ void MainWindow::on_actionImport_from_directory_triggered()
         // Allow adding Sprites
         ui->tilesetView->run();
     }
+}
+
+void MainWindow::on_actionRemove_all_triggered()
+{
+    mProject->getTileset(0)->removeAllSprites();
+    ui->tilesetView->removeAllSpritesFromScene();
 }

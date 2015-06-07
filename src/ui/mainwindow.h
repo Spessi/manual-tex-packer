@@ -6,6 +6,7 @@
 #include "tilesetview.h"
 #include "spriteloader.h"
 #include "project.h"
+#include "sprite.h"
 #include "ui/dialognewtileset.h"
 
 namespace Ui {
@@ -29,14 +30,18 @@ private slots:
     void on_btn_sprites_rew_clicked();
     void on_btn_sprites_for_clicked();
     void on_btn_sprites_stop_clicked();
-
     void on_actionImport_from_directory_triggered();
-
     void on_actionImport_from_file_triggered();
+    void onSpriteSelected(Sprite** sprite);
+    void on_btn_selected_remove_clicked();
+
+    void on_actionRemove_all_triggered();
 
 private:
     Ui::MainWindow *ui;
     Project* mProject;
+    Sprite* mSelectedSprite;
+
 };
 
 #endif // MAINWINDOW_H

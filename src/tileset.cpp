@@ -35,6 +35,21 @@ int Tileset::addSprite(Sprite* sprite) {
     return 0;
 }
 
+int Tileset::removeSprite(Sprite* sprite) {
+    if(sprite == nullptr)
+        return -1;
+
+    // Remove the sprite
+    mSprites.removeAll(sprite);
+
+    return 0;
+}
+
+int Tileset::removeAllSprites() {
+    mSprites.clear();
+
+    return 0;
+}
 
 bool Tileset::checkCollision(Sprite* sprite) {
     // Check if Sprite is out of the Tileset

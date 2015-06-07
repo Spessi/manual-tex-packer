@@ -19,10 +19,12 @@ public:
     int getHeight();
     QString getPath();
     QGraphicsPixmapItem* getPixmapItem();
+    QString getName();
     void setIsOnScene(bool state);
     bool isOnScene();
 
 private:
+    QString mName;
     QGraphicsPixmapItem* mPixmapItem;
     QString mPath;
     bool mIsOnScene;

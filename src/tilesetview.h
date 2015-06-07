@@ -31,6 +31,7 @@ public:
     void addSpriteToScene(Sprite* sprite);
     void addSpritesToScene(QList<Sprite*> sprites);
     void removeSpriteFromScene(Sprite* sprite);
+    void removeAllSpritesFromScene();
     void run();
     void pause();
 
@@ -40,8 +41,7 @@ protected:
 
 signals:
     void mouseReleased();
-
-public slots:
+    void spriteSelected(Sprite** sprite);
 
 private:
     QGraphicsScene* mScene;

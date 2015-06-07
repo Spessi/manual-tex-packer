@@ -7,6 +7,10 @@ Sprite::Sprite(QString spritePath) {
 
     mPath = spritePath;
 
+    // Extract Sprite name from path (filename without suffix)
+    QStringRef name(&mPath, mPath.lastIndexOf('/')+1, mPath.lastIndexOf('.')-mPath.lastIndexOf('/')-1);
+    mName = name.toString();
+
     mIsOnScene = false;
 }
 
@@ -50,6 +54,10 @@ QGraphicsPixmapItem* Sprite::getPixmapItem() {
 
 QString Sprite::getPath() {
     return mPath;
+}
+
+QString Sprite::getName() {
+    return mName;
 }
 
 void Sprite::setIsOnScene(bool state) {
