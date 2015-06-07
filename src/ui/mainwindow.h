@@ -25,11 +25,13 @@ private slots:
     void on_actionNew_triggered();
     void on_btn_importTileset_clicked();
     void on_btn_sprites_playpause_clicked();
-    void refreshSpriteIndex();
+    void refreshSpriteLoaderUI();
 
     void on_btn_sprites_rew_clicked();
 
     void on_btn_sprites_for_clicked();
+
+    void on_btn_sprites_stop_clicked();
 
 private:
     Ui::MainWindow *ui;

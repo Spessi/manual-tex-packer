@@ -31,6 +31,8 @@ public:
     void addSpriteToScene(Sprite* sprite);
     void addSpritesToScene(QList<Sprite*> sprites);
     void removeSpriteFromScene(Sprite* sprite);
+    void run();
+    void pause();
 
 protected:
     void mouseMoveEvent(QMouseEvent* event);
@@ -50,6 +52,7 @@ private:
     Sprite* mSelectedSprite;
     int mMouseX, mMouseY;
     int mMouseTilePosX, mMouseTilePosY;
+    bool mCanAddSprite;
     void showSprite(Sprite* sprite, float x, float y);
 };
 

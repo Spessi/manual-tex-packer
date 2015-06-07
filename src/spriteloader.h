@@ -22,19 +22,18 @@ public:
     int next();
     int prev();
     Sprite* getSprite(int idx);
-    bool isFinished();
-    void setIsFinished(bool state);
     int getSpritesCount();
     int getSpriteIndex();
+    bool isFinished();
+    void finished();
 
 private:
     QDirIterator* mDirIterator;
     QList<Sprite*> mTempSprites;
     QString mPath;
     PathType mType;
-    bool mIsFinished;
     int mSpriteIndex;
-    bool checkIsFinished();
+    bool mIsFinished;
 
 };
 

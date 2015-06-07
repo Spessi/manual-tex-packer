@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 //    connect(ui->inp_width, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogNewTileset::recalcDimension);
-    connect(ui->tilesetView, &TilesetView::mouseReleased, this, &MainWindow::refreshSpriteIndex);
+    connect(ui->tilesetView, &TilesetView::mouseReleased, this, &MainWindow::refreshSpriteLoaderUI);
 }
 
 MainWindow::~MainWindow()
@@ -27,13 +27,12 @@ MainWindow::~MainWindow()
  * CUSTOM SLOTS
  */
 
-void MainWindow::refreshSpriteIndex() {
+void MainWindow::refreshSpriteLoaderUI() {
     if(mTilesetMgr->getSpriteLoader()->isFinished()) {
         ui->btn_sprites_playpause->setEnabled(false);
         ui->btn_sprites_stop->setEnabled(false);
         ui->btn_sprites_for->setEnabled(false);
         ui->btn_sprites_rew->setEnabled(false);
-        ui->btn_sprites_remove->setEnabled(false);
         ui->btn_importTileset->setEnabled(true);
         ui->lbl_sprites_queue->setText("Queue: -/-");
     }
@@ -58,7 +57,6 @@ void MainWindow::on_btn_importTileset_clicked() {
         ui->btn_sprites_stop->setEnabled(true);
         ui->btn_sprites_for->setEnabled(true);
         ui->btn_sprites_rew->setEnabled(true);
-        ui->btn_sprites_remove->setEnabled(true);
         ui->btn_importTileset->setEnabled(false);
 
         ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mTilesetMgr->getSpriteLoader()->getSpritesCount()));
@@ -67,6 +65,9 @@ void MainWindow::on_btn_importTileset_clicked() {
     // Get first sprite
     Sprite* sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
     ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
+
+    // Allow adding Sprites
+    ui->tilesetView->run();
 }
 
 
@@ -74,9 +75,19 @@ void MainWindow::on_btn_sprites_playpause_clicked()
 {
     if(ui->btn_sprites_playpause->text() == "►") {
         ui->btn_sprites_playpause->setText("▮▮");
+
+        ui->tilesetView->run();
+        ui->btn_sprites_for->setEnabled(true);
+        ui->btn_sprites_rew->setEnabled(true);
+        ui->tilesetView->addSpriteToScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
     }
     else {
         ui->btn_sprites_playpause->setText("►");
+
+        ui->tilesetView->pause();
+        ui->btn_sprites_for->setEnabled(false);
+        ui->btn_sprites_rew->setEnabled(false);
+        ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
     }
 }
 
@@ -94,7 +105,7 @@ void MainWindow::on_btn_sprites_for_clicked()
         ui->tilesetView->addSpriteToScene(sprite);
 
         // Refresh UI
-        refreshSpriteIndex();
+        refreshSpriteLoaderUI();
     }
     else {
         QApplication::beep();
@@ -117,13 +128,23 @@ void MainWindow::on_btn_sprites_rew_clicked()
             ui->tilesetView->addSpriteToScene(sprite);
 
             // Refresh UI
-            refreshSpriteIndex();
+            refreshSpriteLoaderUI();
         }
         else {
             QApplication::beep();
         }
         qDebug() << mTilesetMgr->getSpriteLoader()->getSpriteIndex();
 }
+
+void MainWindow::on_btn_sprites_stop_clicked()
+{
+    ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex()));
+    mTilesetMgr->getSpriteLoader()->finished();
+
+    refreshSpriteLoaderUI();
+
+}
+
 
 /*
  * MENUBAR ACTIONS
@@ -172,6 +193,7 @@ void MainWindow::on_actionLoad_triggered()
 
     // Draw Sprites
     ui->tilesetView->addSpritesToScene(mTilesetMgr->getTileset(0)->getSprites());
+    ui->tilesetView->pause();
 
     ui->btn_importTileset->setEnabled(true);
 }

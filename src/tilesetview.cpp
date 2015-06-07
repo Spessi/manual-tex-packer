@@ -16,6 +16,7 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
     mSelectedSpriteBorder = nullptr;
     mMouseTilePosX = mMouseTilePosY = mMouseX = mMouseY = 0;
     mSpriteIsFloating = false;
+    mCanAddSprite = false;
 
     this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
@@ -103,6 +104,16 @@ void TilesetView::removeSpriteFromScene(Sprite* sprite) {
     mScene->removeItem(sprite->getPixmapItem());
 }
 
+void TilesetView::run() {
+    mCanAddSprite = true;
+    mSelectedSpriteBorder->setVisible(true);
+}
+
+void TilesetView::pause() {
+    mCanAddSprite = false;
+    mSelectedSpriteBorder->setVisible(false);
+}
+
 
 void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     // Do some caluclations
@@ -111,19 +122,19 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     mMouseTilePosX = mMouseX / mTilesetMgr->getTileset(0)->getTileWidth() * mTilesetMgr->getTileset(0)->getTileWidth();
     mMouseTilePosY = mMouseY / mTilesetMgr->getTileset(0)->getTileHeight() * mTilesetMgr->getTileset(0)->getTileHeight();
 
-    if(mTilesetMgr == nullptr)
+    if(mTilesetMgr == nullptr || mTilesetMgr->getSpriteLoader() == nullptr)
         return;
 
 
     Sprite* sprite;
-    if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
+    if(mTilesetMgr->getSpriteLoader()->isFinished() == false && mCanAddSprite) {
         sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
     }
     else if(mSelectedSprite != nullptr) {
         sprite = mSelectedSprite;
     }
 
-    if(mTilesetMgr->getSpriteLoader()->isFinished() == false || mSelectedSprite != nullptr) {
+    if((mTilesetMgr->getSpriteLoader()->isFinished() == false && mCanAddSprite) || mSelectedSprite != nullptr) {
         // If SpriteLoader has not-added Sprites....
 
         // Position the Sprite
@@ -155,8 +166,11 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
 
 
 void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
+
     if(event->button() == Qt::LeftButton) {
-        if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
+        qDebug() << "State: " << mCanAddSprite;
+
+        if(mTilesetMgr->getSpriteLoader()->isFinished() == false && mCanAddSprite) {
             // 'Add new Sprites' mode
 
             // Check collision with existing Sprites
@@ -180,7 +194,7 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
                     }
                     else {
                         // Neither in forward nor in backward direction a sprite is available -> finished!
-                        mTilesetMgr->getSpriteLoader()->setIsFinished(true);
+                        mTilesetMgr->getSpriteLoader()->finished();
                     }
                 }
             }
