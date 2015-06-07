@@ -10,12 +10,37 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     mTilesetMgr = nullptr;
+
+
+//    connect(ui->inp_width, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogNewTileset::recalcDimension);
+    connect(ui->tilesetView, &TilesetView::mouseReleased, this, &MainWindow::refreshSpriteIndex);
 }
 
 MainWindow::~MainWindow()
 {
     delete mTilesetMgr;
     delete ui;
+}
+
+
+/*
+ * CUSTOM SLOTS
+ */
+
+void MainWindow::refreshSpriteIndex() {
+    if(mTilesetMgr->getSpriteLoader()->isFinished()) {
+        ui->btn_sprites_playpause->setEnabled(false);
+        ui->btn_sprites_stop->setEnabled(false);
+        ui->btn_sprites_for->setEnabled(false);
+        ui->btn_sprites_rew->setEnabled(false);
+        ui->btn_sprites_remove->setEnabled(false);
+        ui->btn_importTileset->setEnabled(true);
+        ui->lbl_sprites_queue->setText("Queue: -/-");
+    }
+    else {
+        ui->lbl_sprites_queue->setText("Queue: " + QString::number(mTilesetMgr->getSpriteLoader()->getSpriteIndex()+1) + "/" + QString::number(mTilesetMgr->getSpriteLoader()->getSpritesCount()));
+    }
+
 }
 
 
@@ -27,13 +52,78 @@ void MainWindow::on_btn_importTileset_clicked() {
     if(mTilesetMgr == nullptr)
         return;
 
-    mTilesetMgr->getSpriteLoader()->setLoadPath("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tiles", SpriteLoader::Directory);
+    mTilesetMgr->getSpriteLoader()->setLoadPath("D:/Users/Marcel/Documents/Projekte/Handy/Android/MobileMan/data_new/tiles", SpriteLoader::Subdirectory);
+    if(mTilesetMgr->getSpriteLoader()->getSpritesCount() > 0) {
+        ui->btn_sprites_playpause->setEnabled(true);
+        ui->btn_sprites_stop->setEnabled(true);
+        ui->btn_sprites_for->setEnabled(true);
+        ui->btn_sprites_rew->setEnabled(true);
+        ui->btn_sprites_remove->setEnabled(true);
+        ui->btn_importTileset->setEnabled(false);
 
-    Sprite* sprite;
-    mTilesetMgr->getSpriteLoader()->getNextSprite(&sprite);
-    ui->tilesetView->addSpriteToScene(sprite, 0, 0);
+        ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mTilesetMgr->getSpriteLoader()->getSpritesCount()));
+    }
+
+    // Get first sprite
+    Sprite* sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+    ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
 }
 
+
+void MainWindow::on_btn_sprites_playpause_clicked()
+{
+    if(ui->btn_sprites_playpause->text() == "►") {
+        ui->btn_sprites_playpause->setText("▮▮");
+    }
+    else {
+        ui->btn_sprites_playpause->setText("►");
+    }
+}
+
+
+void MainWindow::on_btn_sprites_for_clicked()
+{
+    Sprite* sprite;
+
+    int oldIndex = mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+    if(mTilesetMgr->getSpriteLoader()->next() == 0) {
+        // If next Sprite is available
+        sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+
+        ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(oldIndex));
+        ui->tilesetView->addSpriteToScene(sprite);
+
+        // Refresh UI
+        refreshSpriteIndex();
+    }
+    else {
+        QApplication::beep();
+    }
+
+    qDebug() << mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+}
+
+
+void MainWindow::on_btn_sprites_rew_clicked()
+{
+        Sprite* sprite;
+
+        int oldIndex = mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+        if(mTilesetMgr->getSpriteLoader()->prev() == 0) {
+            // If next Sprite is available
+            sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+
+            ui->tilesetView->removeSpriteFromScene(mTilesetMgr->getSpriteLoader()->getSprite(oldIndex));
+            ui->tilesetView->addSpriteToScene(sprite);
+
+            // Refresh UI
+            refreshSpriteIndex();
+        }
+        else {
+            QApplication::beep();
+        }
+        qDebug() << mTilesetMgr->getSpriteLoader()->getSpriteIndex();
+}
 
 /*
  * MENUBAR ACTIONS
@@ -61,6 +151,8 @@ void MainWindow::on_actionNew_triggered()
 
         // Show Tileset in TilesetView
         ui->tilesetView->init(mTilesetMgr);
+
+        ui->btn_importTileset->setEnabled(true);
     }
     delete dialog;
 }
@@ -77,7 +169,11 @@ void MainWindow::on_actionLoad_triggered()
 
     // Draw grid and initialize other things
     ui->tilesetView->init(mTilesetMgr);
+
+    // Draw Sprites
     ui->tilesetView->addSpritesToScene(mTilesetMgr->getTileset(0)->getSprites());
+
+    ui->btn_importTileset->setEnabled(true);
 }
 
 void MainWindow::on_actionSave_triggered()

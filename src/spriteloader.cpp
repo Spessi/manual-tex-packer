@@ -3,17 +3,24 @@
 SpriteLoader::SpriteLoader() {
     mIsFinished = true;
     mDirIterator = nullptr;
-    mCurrentSprite = nullptr;
+    mSpriteIndex = 0;
 }
 
 SpriteLoader::~SpriteLoader() {
-    delete mDirIterator;
+    if(mDirIterator != nullptr)
+        delete mDirIterator;
+
+    mTempSprites.clear();
 }
+
+
 
 void SpriteLoader::setLoadPath(QString path, PathType pathType) {
     mPath = path;
     mType = pathType;
     mIsFinished = false;
+    mSpriteIndex = 0;
+
 
 
     if(pathType == SpriteLoader::File) {
@@ -24,50 +31,110 @@ void SpriteLoader::setLoadPath(QString path, PathType pathType) {
     }
     else if(pathType == SpriteLoader::Subdirectory) {
         mDirIterator = new QDirIterator(mPath, QDirIterator::Subdirectories);
+        // Load all sprites in memory
+        while(1) {
+            if(mDirIterator->fileInfo().isFile() == false) {
+                mDirIterator->next();
+                continue;
+            }
+
+            mTempSprites.append(new Sprite(mDirIterator->filePath()));
+            qDebug() << "Sprite path: " << mDirIterator->filePath();
+
+            if(mDirIterator->hasNext() == false)
+                break;
+            mDirIterator->next();
+        }
     }
 }
 
+int SpriteLoader::getSpritesCount() {
+    return mTempSprites.size();
+}
 
+bool SpriteLoader::checkIsFinished() {
+    for(int i=0; i < getSpritesCount(); i++) {
+        if(mTempSprites.at(i)->isOnScene() == false)
+            return false;
+    }
 
-int SpriteLoader::loadSprite(QString path) {
-    Sprite* sprite = new Sprite(path);
-    if(sprite == nullptr)
-        return -1;
+    return true;
+}
 
+/**
+ * @brief SpriteLoader::next
+ * @return  0 = OK
+ *          1 = Grenze nach rechts
+ */
+int SpriteLoader::next() {
+    int tmpIndex = mSpriteIndex + 1;
 
-    mCurrentSprite = sprite;
-    mIsFinished = true;
+    while(1) {
+        if(tmpIndex >= getSpritesCount()) {
+            // If the index exceeds the list dimension -> ret 1
+            if(checkIsFinished() == true)
+                mIsFinished = true;
+            return 1;
+        }
+        else if(mTempSprites.at(tmpIndex)->isOnScene()) {
+            // If the Sprite is already on scene, go to the next Sprite
+            tmpIndex++;
+        }
+        else {
+            // If everything is OK -> ret 0
+            mSpriteIndex = tmpIndex;
+            return 0;
+        }
+    }
+
 
     return 0;
 }
 
-int SpriteLoader::loadSprite(QDirIterator* it) {
-    Sprite* sprite = nullptr;
+int SpriteLoader::prev() {
+    int tmpIndex = mSpriteIndex - 1;
 
-    // If current file reference isn't a really file, load next one
-    while(it->fileInfo().isFile() == false) {
-        // Check if a next file is available, otherwise return 0
-        if(it->hasNext() == false) {
-            mIsFinished = true;
-            mCurrentSprite = nullptr;
-            return 0; // Finished
+    while(1) {
+        if(tmpIndex < 0) {
+            // If the index is negative
+            if(checkIsFinished() == true)
+                mIsFinished = true;
+            return 1;
         }
-
-        // Reference next file
-        it->next();
+        else if(mTempSprites.at(tmpIndex)->isOnScene()) {
+            // If the Sprite is already on scene, go to the previous Sprite
+            tmpIndex--;
+        }
+        else {
+            // If everything is OK -> ret 0
+            mSpriteIndex = tmpIndex;
+            return 0;
+        }
     }
 
-    qDebug() << "Sprite path: " << it->filePath();
-    sprite = new Sprite(it->filePath());
+    return 0;
+}
 
-    // Reference next file
-    it->next();
 
-    if(sprite == nullptr)
-        return -1;  // Error
+Sprite* SpriteLoader::getSprite(int idx) {
+    return mTempSprites.at(idx);
+}
 
-    mCurrentSprite = sprite;
-    return 1;   // Sprite OK
+int SpriteLoader::getSpriteIndex() {
+    return mSpriteIndex;
+}
+
+bool SpriteLoader::isFinished() {
+    return mIsFinished;
+}
+
+void SpriteLoader::setIsFinished(bool state) {
+    mIsFinished = state;
+
+    mSpriteIndex = 0;
+    delete mDirIterator;
+    mDirIterator = nullptr;
+    mTempSprites.clear();
 }
 
 
@@ -75,45 +142,73 @@ int SpriteLoader::loadSprite(QDirIterator* it) {
  * @brief Returns a Sprite
  * @return Returns pointer to sprite if file is valid, 0 if finished
  */
+/*
 int SpriteLoader::getNextSprite(Sprite** sprite) {
-    int res = -1;
+    int index = mSpriteIndex;
+    int ret = -1;
+    bool leftSpace = false;
+
+
     if(mType == SpriteLoader::File) {
-        res = loadSprite(mPath);
+        *sprite = new Sprite(mPath);
+        if(*sprite == nullptr)
+            ret = -1;
+
+        mIsFinished = true;
+
+        ret = 0;
     }
-    else if(mType == SpriteLoader::Directory) {
-        res = loadSprite(mDirIterator);
+    else if(mType == SpriteLoader::Subdirectory) {
+        do {
+            index++;
+
+            if(mTempSprites.at(index)->isOnScene() == false)
+                leftSpace = true;
+
+            if(index > mTempSprites.size()) {
+                ret = 2;
+                break;
+            }
+
+
+        } while(index < mTempSprites.size()-1 && mTempSprites.at(index)->isOnScene());
+
+
+        if(index >= mTempSprites.size() || ((index < mTempSprites.size() && leftSpace == false))) {
+            ret = 2; // There's nothing left in this direction, need to check backward
+            *sprite = nullptr;
+        }
+        else {
+            mSpriteIndex = index;
+            *sprite = mTempSprites.at(mSpriteIndex);
+            ret = 1;
+        }
+
     }
 
-    *sprite = mCurrentSprite;
-
-
-    return res;
+    return ret;
 }
 
-/**
- * @brief Returns a Sprite at a predefined position
- * @param x
- * @param y
- * @return Returns pointer to sprite if file is valid, 0 if finished
- */
-int SpriteLoader::getNextSprite(Sprite** sprite, int x, int y) {
-    int res = -1;
-    if(mType == SpriteLoader::File)
-        res = loadSprite(mPath);
-    else if(mType == SpriteLoader::Directory)
-        res = loadSprite(mDirIterator);
+int SpriteLoader::getPrevSprite(Sprite** sprite) {
+    int index = mSpriteIndex;
+    int ret = -1;
 
-    mCurrentSprite->setPos(x, y);
+    do {
+        index--;
 
-    *sprite = mCurrentSprite;
+    } while(index >= 0 && mTempSprites.at(index)->isOnScene());
 
-    return res;
-}
+    if(index < 0) {
+        ret = 2; // There's nothing left in this direction
+        *sprite = nullptr;
+    }
+    else {
+        mSpriteIndex = index;
+        *sprite = mTempSprites.at(mSpriteIndex);
+        ret = 1;
+    }
 
-Sprite* SpriteLoader::getCurrentSprite() {
-    return mCurrentSprite;
-}
+    return ret;
+}*/
 
-bool SpriteLoader::isFinished() {
-    return mIsFinished;
-}
+

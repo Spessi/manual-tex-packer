@@ -19,22 +19,22 @@ public:
     SpriteLoader();
     ~SpriteLoader();
     void setLoadPath(QString path, PathType pathType);
-    int getNextSprite(Sprite** sprite);
-    int getNextSprite(Sprite** sprite, int x, int y);
-    Sprite* getCurrentSprite();
+    int next();
+    int prev();
+    Sprite* getSprite(int idx);
     bool isFinished();
-
-
+    void setIsFinished(bool state);
+    int getSpritesCount();
+    int getSpriteIndex();
 
 private:
-    int loadSprite(QDirIterator* it);
-    int loadSprite(QString path);
-
-    Sprite* mCurrentSprite;
     QDirIterator* mDirIterator;
+    QList<Sprite*> mTempSprites;
     QString mPath;
     PathType mType;
     bool mIsFinished;
+    int mSpriteIndex;
+    bool checkIsFinished();
 
 };
 

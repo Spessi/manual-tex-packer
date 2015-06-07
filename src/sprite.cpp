@@ -6,6 +6,8 @@ Sprite::Sprite(QString spritePath) {
     delete img;
 
     mPath = spritePath;
+
+    mIsOnScene = false;
 }
 
 Sprite::~Sprite() {
@@ -58,4 +60,12 @@ QGraphicsPixmapItem* Sprite::getPixmapItem() {
 
 QString Sprite::getPath() {
     return mPath;
+}
+
+void Sprite::setIsOnScene(bool state) {
+    mIsOnScene = state;
+}
+
+bool Sprite::isOnScene() {
+    return mIsOnScene;
 }

@@ -28,13 +28,16 @@ public:
     explicit TilesetView(QWidget *parent = 0);
     void init(TilesetManager* tilesetMgr);
     void addSpriteToScene(Sprite* sprite, int x, int y);
+    void addSpriteToScene(Sprite* sprite);
     void addSpritesToScene(QList<Sprite*> sprites);
+    void removeSpriteFromScene(Sprite* sprite);
 
 protected:
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
 
 signals:
+    void mouseReleased();
 
 public slots:
 

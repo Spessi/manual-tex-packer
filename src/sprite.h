@@ -22,10 +22,13 @@ public:
     int getTileY();
     QString getPath();
     QGraphicsPixmapItem* getPixmapItem();
+    void setIsOnScene(bool state);
+    bool isOnScene();
 
 private:
     QGraphicsPixmapItem* mPixmapItem;
     QString mPath;
+    bool mIsOnScene;
 };
 
 #endif // SPRITE_H

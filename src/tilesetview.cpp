@@ -6,6 +6,7 @@
  * */
 
 QGraphicsRectItem* mSelectedSpriteBorder;
+bool mSpriteIsFloating;
 
 TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
     setMouseTracking(true);
@@ -14,6 +15,7 @@ TilesetView::TilesetView(QWidget *parent) :  QGraphicsView(parent) {
     mSelectedSprite = nullptr;
     mSelectedSpriteBorder = nullptr;
     mMouseTilePosX = mMouseTilePosY = mMouseX = mMouseY = 0;
+    mSpriteIsFloating = false;
 
     this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
@@ -64,13 +66,18 @@ void TilesetView::init(TilesetManager* tilesetMgr) {
     mScene->addItem(mSelectedSpriteBorder);
 }
 
+void TilesetView::addSpriteToScene(Sprite* sprite) {
+    addSpriteToScene(sprite, mMouseTilePosX, mMouseTilePosY);
+}
+
 void TilesetView::addSpriteToScene(Sprite* sprite, int x, int y) {
     if(sprite != nullptr) {
         sprite->setPos(x, y);
         mScene->addItem(sprite->getPixmapItem());
 
+
         // Move the rectangle to the border of the Sprite
-        mSelectedSpriteBorder->setRect(mMouseTilePosX, mMouseTilePosY, sprite->getWidth(), sprite->getHeight());
+        mSelectedSpriteBorder->setRect(x, y, sprite->getWidth(), sprite->getHeight());
         mSelectedSpriteBorder->setVisible(true);
 
         // Check collision
@@ -92,6 +99,10 @@ void TilesetView::addSpritesToScene(QList<Sprite*> sprites) {
     }
 }
 
+void TilesetView::removeSpriteFromScene(Sprite* sprite) {
+    mScene->removeItem(sprite->getPixmapItem());
+}
+
 
 void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     // Do some caluclations
@@ -103,9 +114,11 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     if(mTilesetMgr == nullptr)
         return;
 
+
     Sprite* sprite;
-    if(mTilesetMgr->getSpriteLoader()->isFinished() == false)
-        sprite = mTilesetMgr->getSpriteLoader()->getCurrentSprite();
+    if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
+        sprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+    }
     else if(mSelectedSprite != nullptr) {
         sprite = mSelectedSprite;
     }
@@ -140,29 +153,45 @@ void TilesetView::mouseMoveEvent(QMouseEvent* event) {
     this->scene()->update(this->sceneRect());
 }
 
+
 void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
-
     if(event->button() == Qt::LeftButton) {
-
-        // If Sprites are in SpriteLoader available,  you have to place them first
         if(mTilesetMgr->getSpriteLoader()->isFinished() == false) {
-            // Check collision with existing Sprites
-            if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getCurrentSprite()) == false) {
-                // Add Sprite to Tileset for management and storing
-                mTilesetMgr->getTileset(0)->addSprite(mTilesetMgr->getSpriteLoader()->getCurrentSprite());
+            // 'Add new Sprites' mode
 
-                if(mTilesetMgr->getSpriteLoader()->getCurrentSprite() != nullptr) {
-                    Sprite* sprite;
-                    mTilesetMgr->getSpriteLoader()->getNextSprite(&sprite);
-                    addSpriteToScene(sprite, mMouseTilePosX, mMouseTilePosY);
+            // Check collision with existing Sprites
+            if(mTilesetMgr->getTileset(0)->checkCollision(mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex())) == false) {
+                // Add Sprite to Tileset for management and storing
+                Sprite* floatingSprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+                floatingSprite->setIsOnScene(true);
+                mTilesetMgr->getTileset(0)->addSprite(floatingSprite);
+
+                // Load new Sprite from SpriteLoader
+                if(mTilesetMgr->getSpriteLoader()->next() == 0) {
+                    // New sprite is available
+                    Sprite* newSprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+                    addSpriteToScene(newSprite, mMouseTilePosX, mMouseTilePosY);;
+                }
+                else {
+                    // No new sprite is available in the forward direction
+                    if(mTilesetMgr->getSpriteLoader()->prev() == 0) {
+                        Sprite* newSprite = mTilesetMgr->getSpriteLoader()->getSprite(mTilesetMgr->getSpriteLoader()->getSpriteIndex());
+                        addSpriteToScene(newSprite, mMouseTilePosX, mMouseTilePosY);;
+                    }
+                    else {
+                        // Neither in forward nor in backward direction a sprite is available -> finished!
+                        mTilesetMgr->getSpriteLoader()->setIsFinished(true);
+                    }
                 }
             }
             else {
-                // Make system sound to signalize the collision
+                // Collision with an existing Sprite!
                 QApplication::beep();
             }
         }
         else {
+            // Selection mode!
+
             if(mSelectedSprite == nullptr) {
                 int k = mTilesetMgr->getTileset(0)->selectSprite(mMouseX, mMouseY);
                 if(k >= 0) {
@@ -180,6 +209,8 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
                     QApplication::beep();
             }
         }
+
+        emit mouseReleased();
     }
 }
 
