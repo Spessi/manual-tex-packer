@@ -29,8 +29,10 @@ private slots:
     void on_btn_sprites_rew_clicked();
     void on_btn_sprites_for_clicked();
     void on_btn_sprites_stop_clicked();
-    void on_btn_importSpritesFile_clicked();
-    void on_btn_importSpritesDir_clicked();
+
+    void on_actionImport_from_directory_triggered();
+
+    void on_actionImport_from_file_triggered();
 
 private:
     Ui::MainWindow *ui;

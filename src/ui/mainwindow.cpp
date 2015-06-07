@@ -12,7 +12,6 @@ MainWindow::MainWindow(QWidget *parent) :
     mProject = nullptr;
 
 
-//    connect(ui->inp_width, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogNewTileset::recalcDimension);
     connect(ui->tilesetView, &TilesetView::mouseReleased, this, &MainWindow::refreshSpriteLoaderUI);
 }
 
@@ -33,8 +32,8 @@ void MainWindow::refreshSpriteLoaderUI() {
         ui->btn_sprites_stop->setEnabled(false);
         ui->btn_sprites_for->setEnabled(false);
         ui->btn_sprites_rew->setEnabled(false);
-        ui->btn_importSpritesFile->setEnabled(true);
-        ui->btn_importSpritesDir->setEnabled(true);
+        ui->actionImport_from_file->setEnabled(true);
+        ui->actionImport_from_directory->setEnabled(true);
         ui->lbl_sprites_queue->setText("Queue: -/-");
     }
     else {
@@ -47,68 +46,6 @@ void MainWindow::refreshSpriteLoaderUI() {
 /*
  * BUTTON SLOTS
  */
-
-
-void MainWindow::on_btn_importSpritesFile_clicked()
-{
-    if(mProject == nullptr)
-        return;
-
-
-    // Import single file
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Import image"), "", tr("Image Files (*.png)"));
-    if(filePath.isNull())
-        return;
-    mProject->getSpriteLoader()->setLoadPath(filePath, SpriteLoader::File);
-
-    // Get sprite
-    Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
-    ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
-
-    // Allow adding Sprites
-    ui->tilesetView->run();
-
-    // Disable import buttons
-    ui->btn_importSpritesFile->setEnabled(false);
-    ui->btn_importSpritesDir->setEnabled(false);
-
-}
-
-
-void MainWindow::on_btn_importSpritesDir_clicked()
-{
-    QStringList folderPath;
-
-    if(mProject == nullptr)
-        return;
-
-    QFileDialog dialog(this);
-    dialog.setWindowTitle(tr("Import images"));
-    dialog.setNameFilter(tr("Image files (*.png)"));
-    dialog.setFileMode(QFileDialog::Directory);
-    if(dialog.exec()) {
-        folderPath = dialog.selectedFiles();
-    }
-
-    mProject->getSpriteLoader()->setLoadPath(folderPath.at(0), SpriteLoader::Subdirectory);
-    if(mProject->getSpriteLoader()->getSpritesCount() > 0) {
-        ui->btn_sprites_playpause->setEnabled(true);
-        ui->btn_sprites_stop->setEnabled(true);
-        ui->btn_sprites_for->setEnabled(true);
-        ui->btn_sprites_rew->setEnabled(true);
-        ui->btn_importSpritesFile->setEnabled(false);
-        ui->btn_importSpritesDir->setEnabled(false);
-
-        ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
-
-        // Get first sprite
-        Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
-        ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
-
-        // Allow adding Sprites
-        ui->tilesetView->run();
-    }
-}
 
 
 void MainWindow::on_btn_sprites_playpause_clicked()
@@ -213,8 +150,8 @@ void MainWindow::on_actionNew_triggered()
         // Show Tileset in TilesetView
         ui->tilesetView->init(mProject);
 
-        ui->btn_importSpritesFile->setEnabled(true);
-        ui->btn_importSpritesDir->setEnabled(true);
+        ui->actionImport_from_file->setEnabled(true);
+        ui->actionImport_from_directory->setEnabled(true);
     }
     delete dialog;
 }
@@ -240,8 +177,8 @@ void MainWindow::on_actionLoad_triggered()
     ui->tilesetView->addSpritesToScene(mProject->getTileset(0)->getSprites());
     ui->tilesetView->pause();
 
-    ui->btn_importSpritesFile->setEnabled(true);
-    ui->btn_importSpritesDir->setEnabled(true);
+    ui->actionImport_from_file->setEnabled(true);
+    ui->actionImport_from_directory->setEnabled(true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -252,5 +189,61 @@ void MainWindow::on_actionSave_triggered()
     mProject->saveToFile(filePath);
 }
 
+void MainWindow::on_actionImport_from_file_triggered()
+{
+    if(mProject == nullptr)
+        return;
 
 
+    // Import single file
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Import image"), "", tr("Image Files (*.png)"));
+    if(filePath.isNull())
+        return;
+    mProject->getSpriteLoader()->setLoadPath(filePath, SpriteLoader::File);
+
+    // Get sprite
+    Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
+    ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
+
+    // Allow adding Sprites
+    ui->tilesetView->run();
+
+    // Disable import buttons
+    ui->actionImport_from_file->setEnabled(false);
+    ui->actionImport_from_directory->setEnabled(false);
+}
+
+void MainWindow::on_actionImport_from_directory_triggered()
+{
+    QStringList folderPath;
+
+    if(mProject == nullptr)
+        return;
+
+    QFileDialog dialog(this);
+    dialog.setWindowTitle(tr("Import images"));
+    dialog.setNameFilter(tr("Image files (*.png)"));
+    dialog.setFileMode(QFileDialog::Directory);
+    if(dialog.exec()) {
+        folderPath = dialog.selectedFiles();
+    }
+
+    mProject->getSpriteLoader()->setLoadPath(folderPath.at(0), SpriteLoader::Subdirectory);
+    if(mProject->getSpriteLoader()->getSpritesCount() > 0) {
+        ui->btn_sprites_playpause->setEnabled(true);
+        ui->btn_sprites_stop->setEnabled(true);
+        ui->btn_sprites_for->setEnabled(true);
+        ui->btn_sprites_rew->setEnabled(true);
+        ui->actionImport_from_file->setEnabled(false);
+        ui->actionImport_from_directory->setEnabled(false);
+
+        ui->lbl_sprites_queue->setText("Queue: " + QString::number(1) + "/" + QString::number(mProject->getSpriteLoader()->getSpritesCount()));
+
+        // Get first sprite
+        Sprite* sprite = mProject->getSpriteLoader()->getSprite(mProject->getSpriteLoader()->getSpriteIndex());
+        ui->tilesetView->addSpriteToScene(sprite, 0 ,0);
+
+        // Allow adding Sprites
+        ui->tilesetView->run();
+    }
+}

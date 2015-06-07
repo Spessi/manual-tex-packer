@@ -22,7 +22,6 @@ void SpriteLoader::setLoadPath(QString path, PathType pathType) {
     mIsFinished = false;
 
 
-
     if(pathType == SpriteLoader::File) {
         mDirIterator = nullptr;
         QFileInfo info(mPath);
