@@ -17,19 +17,6 @@
    <string>Manual Tex Packer</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>510</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Write *.pack</string>
-    </property>
-   </widget>
    <widget class="TilesetView" name="tilesetView">
     <property name="enabled">
      <bool>false</bool>
@@ -87,7 +74,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Queue: 0/0</string>
+      <string>Queue: -/-</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btn_sprites_playpause">
@@ -191,7 +178,7 @@
   </widget>
   <action name="actionNew">
    <property name="text">
-    <string>New</string>
+    <string>New project</string>
    </property>
   </action>
   <action name="actionLoad">

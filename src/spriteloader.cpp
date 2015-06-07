@@ -3,7 +3,7 @@
 SpriteLoader::SpriteLoader() {
     mDirIterator = nullptr;
     mSpriteIndex = 0;
-    mIsFinished = false;
+    mIsFinished = true;
 }
 
 SpriteLoader::~SpriteLoader() {

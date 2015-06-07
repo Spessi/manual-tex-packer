@@ -26,11 +26,8 @@ private slots:
     void on_btn_importTileset_clicked();
     void on_btn_sprites_playpause_clicked();
     void refreshSpriteLoaderUI();
-
     void on_btn_sprites_rew_clicked();
-
     void on_btn_sprites_for_clicked();
-
     void on_btn_sprites_stop_clicked();
 
 private:

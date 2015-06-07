@@ -15,7 +15,7 @@ public:
     void addTileset(Tileset* tileset);
     Tileset* getTileset(int idx);
     SpriteLoader* getSpriteLoader();
-    int saveToFile();
+    int saveToFile(QString path);
     int loadFromFile(QString path);
 
 private:
