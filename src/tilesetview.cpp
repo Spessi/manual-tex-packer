@@ -1,9 +1,5 @@
 #include "tilesetview.h"
 
-/* TODO
- * - Sprites werden aus XML importiert und in Tileset Liste gespeichert -> check
- * - Geladene Sprites müssen gezeichnet werden, evtl. TilesetView noch mehr von Logik trennen.
- * */
 
 QGraphicsRectItem* mSelectedSpriteBorder;
 bool mSpriteIsFloating;
@@ -205,7 +201,6 @@ void TilesetView::mouseReleaseEvent(QMouseEvent* event) {
         }
         else {
             // Selection mode!
-
             if(mSelectedSprite == nullptr) {
                 int k = mTilesetMgr->getTileset(0)->selectSprite(mMouseX, mMouseY);
                 if(k >= 0) {

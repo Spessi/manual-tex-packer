@@ -180,13 +180,15 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionLoad_triggered()
 {
-
     if(mTilesetMgr != nullptr)
         delete mTilesetMgr;
 
     mTilesetMgr = new TilesetManager();
+
+
     // Load project configuration
-    mTilesetMgr->loadFromFile("D:/Users/Marcel/Documents/Projekte/PC/Qt/ManualTexPack/project.xml");
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TexProject Files (*.texproj)"));
+    mTilesetMgr->loadFromFile(filePath);
 
     // Draw grid and initialize other things
     ui->tilesetView->init(mTilesetMgr);
@@ -200,8 +202,6 @@ void MainWindow::on_actionLoad_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-
-    qDebug() << "Write!";
-    mTilesetMgr->saveToFile("D:/Users/Marcel/Documents/Projekte/PC/Qt/ManualTexPack/project.xml");
-    //mTileset->saveToFile("D:/Users/Marcel/Documents/Projekte/PC/Qt/ManualTexPack/project.xml");
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Project"), "", tr("TexProject Files (*.texproj)"));
+    mTilesetMgr->saveToFile(filePath);
 }

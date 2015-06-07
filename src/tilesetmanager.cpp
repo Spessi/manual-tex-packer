@@ -128,66 +128,7 @@ int TilesetManager::loadFromFile(QString path) {
                 }
             }
     }
-/*
-    // Get sprites
-    while(!stream.atEnd() && !stream.hasError()) {
-        // Read next element
-        QXmlStreamReader::TokenType token = stream.readNext();
-        //If token is just StartDocument - go to next
-            if(token == QXmlStreamReader::StartDocument) {
-                continue;
-            }
-
-            //If token is StartElement - read it
-            if(token == QXmlStreamReader::StartElement) {
-                if(stream.name() == "sprite_" + QString::number(sprites_counter)) {
-                    continue;
-                }
-
-                if(stream.name() == "width") {
-                    sprite_width = stream.readElementText().toInt();
-                }
-                else if(stream.name() == "height") {
-                    sprite_height = stream.readElementText().toInt();
-                }
-                else if(stream.name() == "x") {
-                    sprite_x = stream.readElementText().toInt();
-                }
-                else if(stream.name() == "y") {
-                    sprite_y = stream.readElementText().toInt();
-                }
-                else if(stream.name() == "path") {
-                    sprite_path = stream.readElementText();
-                }
-            }
-            if(token == QXmlStreamReader::EndElement) {
-                if(stream.name() == "sprite_" + QString::number(sprites_counter)) {
-                    // Create new Sprite from XML informations
-                    sprite = new Sprite(sprite_path);
-
-                    // Check if real width matches with XML informations
-                    if(sprite->getWidth() != sprite_width || sprite->getHeight() != sprite_height)
-                        return -1;
-
-                    // Position sprite
-                    sprite->setPos(sprite_x, sprite_y);
-
-                    // Add sprite to sprite list
-                    this->getTileset(0)->addSprite(sprite);
-
-
-
-                    sprites_counter++;
-                    if(sprites_counter >= sprites_count)
-                        break;
-                }
-            }
-    }
-*/
     file.close();
-
-    // TODO check if read was successful -> add it, otherwise delete it
-//    this->addTileset(tileset);
 
     return 0;
 }

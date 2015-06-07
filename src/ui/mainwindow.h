@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
 #include "tilesetview.h"
 #include "spriteloader.h"
 #include "tilesetmanager.h"
